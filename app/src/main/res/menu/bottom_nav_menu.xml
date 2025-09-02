@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:title="Início"
+        android:icon="@drawable/home_24" />
+
+    <item
+        android:id="@+id/nav_lupa"
+        android:title="Artigos"
+        android:icon="@drawable/search_24"/>
+
+    <item
+        android:id="@+id/nav_mapa"
+        android:title="Mapa"
+        android:icon="@drawable/location_24dp"/>
+    <item
+        android:id="@+id/nav_usuario"
+        android:title="Perfil"
+        android:icon="@drawable/person_24"/>
+</menu>

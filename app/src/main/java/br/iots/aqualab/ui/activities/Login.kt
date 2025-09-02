@@ -17,10 +17,20 @@ class Login : AppCompatActivity() {
         val link_criar_conta = findViewById<TextView>(R.id.linkSignUp)
         link_criar_conta.setOnClickListener { irTelaCadastro() }
 
+        val botao_entrar = findViewById<TextView>(R.id.botaoEntrar)
+        botao_entrar.setOnClickListener { irTelaHome() }
+
+
     }
     private fun irTelaCadastro()
     {
         val intent = Intent(this, CriarConta::class.java)
+        startActivity(intent)
+    }
+
+    private fun irTelaHome()
+    {
+        val intent = Intent(this, Home::class.java)
         startActivity(intent)
     }
 }
