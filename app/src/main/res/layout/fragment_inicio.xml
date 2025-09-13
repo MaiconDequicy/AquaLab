@@ -36,14 +36,16 @@
             android:layout_marginEnd="30dp"
             />
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="100dp"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
             android:layout_marginTop="20dp"
             app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+            app:strokeColor="@color/cinza_fraco"
+            app:strokeWidth="1dp"
+            >
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -89,33 +91,36 @@
                         />
                 </LinearLayout>
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardMapas"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="15dp"
             app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
+            app:strokeColor="@color/cinza_fraco"
+            app:strokeWidth="1dp"
+            >
             <fragment
                 android:id="@+id/map"
                 android:name="com.google.android.gms.maps.SupportMapFragment"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />
-        </androidx.cardview.widget.CardView>
-        <androidx.cardview.widget.CardView
+        </com.google.android.material.card.MaterialCardView>
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardArtigos"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginStart="30dp"
             android:layout_marginEnd="30dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="15dp"
             app:cardCornerRadius="20dp"
-            app:cardElevation="8dp">
-
+            app:strokeColor="@color/cinza_fraco"
+            app:strokeWidth="1dp"
+            >
             <LinearLayout
                 android:id="@+id/layoutInternoArtigos"
                 android:layout_width="match_parent"
@@ -175,6 +180,6 @@
                     android:fontFamily="@font/poppins_bold"
                     app:cornerRadius="32dp" />
             </LinearLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
     </LinearLayout>
 </FrameLayout>
