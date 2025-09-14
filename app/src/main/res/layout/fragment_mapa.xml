@@ -1,13 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="16dp"
     tools:context=".ui.fragments.Mapa">
 
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Maappaaaa" />
+        android:orientation="vertical"
+        >
 
+        <TextView
+            android:id="@+id/textViewTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mapa de Pontos de Coleta"
+            android:textAppearance="?attr/textAppearanceHeadline5"
+            android:textColor="@color/blue"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginTop="14dp"
+
+            />
+
+        <TextView
+            android:id="@+id/textViewSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Visualize novos e antigos pontos de coletas públicos"
+            android:textAppearance="?attr/textAppearanceBody1"
+            android:textColor="@color/light_gray"
+            android:fontFamily="@font/poppins"
+            />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardMapContainer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="20dp"
+            app:strokeColor="@color/cinza_fraco"
+            app:strokeWidth="1dp">
+            <fragment
+                android:id="@+id/PontosDeColeta"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
 </FrameLayout>
