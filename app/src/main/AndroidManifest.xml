@@ -12,6 +12,17 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AquaLab">
         <activity
+            android:name=".ui.activities.ConfirmacaoLink"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.EsqueciSenha"
+            android:exported="false" />
+
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyD2z6Nbw7efIQ-hned98WbXb6xYfyCCNro" />
+
+        <activity
             android:name=".ui.activities.Home"
             android:exported="false" />
         <activity

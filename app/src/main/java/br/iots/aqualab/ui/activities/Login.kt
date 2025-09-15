@@ -20,6 +20,8 @@ class Login : AppCompatActivity() {
         val botao_entrar = findViewById<TextView>(R.id.botaoEntrar)
         botao_entrar.setOnClickListener { irTelaHome() }
 
+        val text_esqueciSenha =  findViewById<TextView>(R.id.linkEsqueciSenha)
+        text_esqueciSenha.setOnClickListener { irTelaEsqueciSenha() }
 
     }
     private fun irTelaCadastro()
@@ -31,6 +33,12 @@ class Login : AppCompatActivity() {
     private fun irTelaHome()
     {
         val intent = Intent(this, Home::class.java)
+        startActivity(intent)
+    }
+
+    private fun irTelaEsqueciSenha()
+    {
+        val intent = Intent(this, EsqueciSenha::class.java)
         startActivity(intent)
     }
 }
