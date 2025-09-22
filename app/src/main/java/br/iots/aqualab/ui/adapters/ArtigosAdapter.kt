@@ -17,7 +17,7 @@ class ArtigosAdapter(private val onItemClicked: (Artigo) -> Unit) :
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ArtigoViewHolder {
         val view = LayoutInflater.from(parent.context)
-            .inflate(R.layout.item_artigo, parent, false) // Seu layout do item
+            .inflate(R.layout.item_artigo, parent, false)
         return ArtigoViewHolder(view)
     }
 
