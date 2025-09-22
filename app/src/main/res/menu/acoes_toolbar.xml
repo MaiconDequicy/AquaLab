@@ -3,5 +3,6 @@
     <item
         android:id="@+id/acao_sair"
         android:icon="@drawable/exit_24dp"
-        android:title="Sair" />
+        android:title="Sair"
+        />
 </menu>
