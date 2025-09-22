@@ -23,7 +23,7 @@ class ArtigosViewModel : ViewModel() {
                 id = "1",
                 titulo = "A Importância da Qualidade da Água",
                 resumo = "Descubra por que monitorar a qualidade da água é crucial para a saúde e o meio ambiente.",
-                urlImagem = "https://exemplo.com/imagem_agua.jpg" // Use uma URL real ou deixe null
+                urlImagem = "https://exemplo.com/imagem_agua.jpg"
             ),
             Artigo(
                 id = "2",
