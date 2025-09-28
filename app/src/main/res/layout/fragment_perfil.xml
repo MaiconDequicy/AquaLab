@@ -33,6 +33,7 @@
             android:layout_marginBottom="8dp"
             >
             <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/imageViewPerfil"
                 android:layout_width="130dp"
                 android:layout_height="130dp"
                 android:src="@drawable/perfil"
