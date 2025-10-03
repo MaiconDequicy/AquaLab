@@ -1,11 +1,24 @@
 package br.iots.aqualab.ui.fragments
 
+import android.Manifest
+import android.app.Activity
+import android.content.ActivityNotFoundException
+import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import br.iots.aqualab.R
@@ -17,6 +30,10 @@ import br.iots.aqualab.ui.viewmodel.PerfilUIState
 import br.iots.aqualab.ui.viewmodel.PerfilViewModel
 import com.bumptech.glide.Glide
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.io.File
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.*
 
 class Perfil : Fragment() {
 
@@ -25,14 +42,82 @@ class Perfil : Fragment() {
 
     private val perfilViewModel: PerfilViewModel by viewModels()
 
+    private lateinit var requestCameraPermissionLauncher: ActivityResultLauncher<String>
+    private lateinit var requestStoragePermissionLauncher: ActivityResultLauncher<Array<String>>
+
+    private lateinit var pickImageFromGalleryLauncher: ActivityResultLauncher<Intent>
+    private lateinit var takePictureLauncher: ActivityResultLauncher<Uri>
+
+    private var currentPhotoUri: Uri? = null
+
     companion object {
         private const val TAG = "PerfilFragment"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
+        setHasOptionsMenu(true) // Para o menu de logout
+        initializeActivityResults()
     }
+
+    private fun initializeActivityResults() {
+        requestCameraPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted: Boolean ->
+                if (isGranted) {
+                    Log.d(TAG, "Permissão da Câmera concedida.")
+                    openCamera()
+                } else {
+                    Log.d(TAG, "Permissão da Câmera negada.")
+                    Toast.makeText(requireContext(), "Permissão da câmera negada.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        requestStoragePermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { permissions ->
+                val allGranted = permissions.entries.all { it.value }
+                if (allGranted) {
+                    Log.d(TAG, "Permissões de Armazenamento concedidas.")
+                    openGallery()
+                } else {
+                    Log.d(TAG, "Uma ou mais permissões de Armazenamento foram negadas.")
+                    Toast.makeText(requireContext(), "Permissão para acessar a galeria negada.", Toast.LENGTH_SHORT).show()
+                }
+            }
+
+        pickImageFromGalleryLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+                if (result.resultCode == Activity.RESULT_OK) {
+                    result.data?.data?.let { uri ->
+                        Log.d(TAG, "Imagem selecionada da galeria: $uri")
+                        currentPhotoUri = uri
+
+                        perfilViewModel.uploadProfileImage(uri)
+
+                    }
+                } else {
+                    Log.d(TAG, "Seleção de imagem da galeria cancelada ou falhou.")
+                }
+            }
+
+        takePictureLauncher =
+            registerForActivityResult(ActivityResultContracts.TakePicture()) { success: Boolean ->
+                if (success) {
+                    val photoUri = currentPhotoUri
+                    if (photoUri != null) {
+                        Log.d(TAG, "Foto tirada com sucesso. URI: $photoUri")
+
+                        perfilViewModel.uploadProfileImage(photoUri)
+
+                    } else {
+                        Log.e(TAG, "currentPhotoUri é null após tirar foto, mesmo com sucesso.")
+                        Toast.makeText(requireContext(), "Erro ao obter a foto capturada.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.d(TAG, "Captura de foto cancelada ou falhou.")
+                }
+            }
+    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,27 +134,14 @@ class Perfil : Fragment() {
         (activity as? AppCompatActivity)?.supportActionBar?.title = ""
 
         binding.toolbarPerfil.setNavigationOnClickListener {
-            Log.d(TAG, "Botão de navegação (voltar) da toolbarPerfil clicado.")
             parentFragmentManager.popBackStack()
         }
 
-        perfilViewModel.perfilState.observe(viewLifecycleOwner) { state ->
-            when (state) {
-                is PerfilUIState.LogoutSuccess -> {
-                    Toast.makeText(requireContext(), "Você saiu", Toast.LENGTH_SHORT).show()
-                    navigateToLogin()
-                }
-                is PerfilUIState.Error -> {
-                    Toast.makeText(requireContext(), "Erro: ${state.message}", Toast.LENGTH_LONG).show()
-                }
-                is PerfilUIState.UserProfileLoaded -> {
-                }
-                is PerfilUIState.Idle -> {
-                }
-            }
+        binding.fabEditarImagem.setOnClickListener {
+            Log.d(TAG, "FAB Editar Imagem clicado.")
+            showImageSourceDialog()
         }
 
-        //Observa os dados do perfil do usuário
         perfilViewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             Log.d(TAG, "userProfile LiveData OBSERVED. UserProfile: $userProfile")
             if (userProfile != null) {
@@ -81,10 +153,42 @@ class Perfil : Fragment() {
                 Glide.with(this)
                     .load(R.drawable.perfil)
                     .circleCrop()
-                    .into(binding.framaLTPerfil.findViewById(R.id.imageViewPerfil))
+                    .into(binding.imageViewPerfil)
+            }
+        }
+
+        perfilViewModel.perfilState.observe(viewLifecycleOwner) { state ->
+            Log.d(TAG, "perfilState OBSERVED. Novo estado: ${state::class.java.simpleName}")
+
+
+            when (state) {
+                is PerfilUIState.LogoutSuccess -> {
+                    Log.d(TAG, "Estado LogoutSuccess recebido. Navegando para login...")
+                    Toast.makeText(requireContext(), "Você saiu.", Toast.LENGTH_SHORT).show()
+                    navigateToLogin()
+                }
+                is PerfilUIState.Error -> {
+                    Log.d(TAG, "Estado Error recebido: ${state.message}")
+                    Toast.makeText(requireContext(), "Erro: ${state.message}", Toast.LENGTH_LONG).show()
+                }
+                is PerfilUIState.UserProfileLoaded -> {
+                    Log.d(TAG, "Estado UserProfileLoaded recebido (via perfilState): ${state.userProfile}")
+
+                    updateUIWithUserProfile(state.userProfile)
+                    Toast.makeText(requireContext(), "Foto de perfil atualizada com sucesso!", Toast.LENGTH_SHORT).show()
+                }
+                is PerfilUIState.Idle -> {
+                    Log.d(TAG, "Estado Idle recebido")
+                }
+
+                is PerfilUIState.Loading -> {
+                    Log.d(TAG, "Estado Loading recebido")
+                }
+
             }
         }
     }
+
 
     private fun updateUIWithUserProfile(userProfile: UserProfile) {
         Log.d(TAG, "updateUIWithUserProfile: Atualizando UI com dados: $userProfile")
@@ -98,29 +202,158 @@ class Perfil : Fragment() {
         }
         binding.textoTipoUsuario.text = userTypeString
 
-        val imageView = binding.framaLTPerfil.findViewById<com.google.android.material.imageview.ShapeableImageView>(R.id.imageViewPerfil) // Certifique-se que o ID é este ou ajuste
-
-        if (imageView != null) {
-            if (!userProfile.photoUrl.isNullOrEmpty()) {
-                Glide.with(this)
-                    .load(userProfile.photoUrl)
-                    .circleCrop()
-                    .placeholder(R.drawable.perfil)
-                    .error(R.drawable.perfil)
-                    .into(imageView)
-            } else {
-                Glide.with(this)
-                    .load(R.drawable.perfil)
-                    .circleCrop()
-                    .into(imageView)
-            }
+        if (!userProfile.photoUrl.isNullOrEmpty()) {
+            Glide.with(this)
+                .load(userProfile.photoUrl)
+                .circleCrop()
+                .placeholder(R.drawable.perfil)
+                .error(R.drawable.perfil)
+                .into(binding.imageViewPerfil)
         } else {
-            Log.e(TAG, "updateUIWithUserProfile: ShapeableImageView com ID 'imageViewPerfil' não encontrada dentro de 'framaLTPerfil'")
+            Glide.with(this)
+                .load(R.drawable.perfil)
+                .circleCrop()
+                .into(binding.imageViewPerfil)
+        }
+    }
+
+
+    private fun showImageSourceDialog() {
+        val options = arrayOf("Tirar Foto", "Escolher da Galeria", "Cancelar")
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Alterar Foto de Perfil")
+            .setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> { // Tirar Foto
+                        Log.d(TAG, "Opção 'Tirar Foto' selecionada.")
+                        checkCameraPermissionAndOpenCamera()
+                    }
+                    1 -> { // Escolher da Galeria
+                        Log.d(TAG, "Opção 'Escolher da Galeria' selecionada.")
+                        checkStoragePermissionAndOpenGallery()
+                    }
+                    2 -> { // Cancelar
+                        Log.d(TAG, "Opção 'Cancelar' selecionada.")
+                        dialog.dismiss()
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun checkCameraPermissionAndOpenCamera() {
+        when {
+            ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                Log.d(TAG, "Permissão da Câmera já concedida. Abrindo câmera.")
+                openCamera()
+            }
+            shouldShowRequestPermissionRationale(Manifest.permission.CAMERA) -> {
+
+                Log.d(TAG, "Mostrando rationale para permissão da Câmera.")
+
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+            else -> {
+                Log.d(TAG, "Solicitando permissão da Câmera.")
+                requestCameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun checkStoragePermissionAndOpenGallery() {
+        val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(Manifest.permission.READ_MEDIA_IMAGES)
+        } else {
+            arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE)
+        }
+
+        val allPermissionsGranted = permissionsToRequest.all {
+            ContextCompat.checkSelfPermission(requireContext(), it) == PackageManager.PERMISSION_GRANTED
+        }
+
+        if (allPermissionsGranted) {
+            Log.d(TAG, "Permissões de armazenamento já concedidas. Abrindo galeria.")
+            openGallery()
+        } else {
+            Log.d(TAG, "Solicitando permissões de armazenamento.")
+            requestStoragePermissionLauncher.launch(permissionsToRequest)
+        }
+    }
+
+
+    private fun openGallery() {
+        Log.d(TAG, "Abrindo a galeria.")
+        val intent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+
+        try {
+            pickImageFromGalleryLauncher.launch(intent)
+        } catch (e: ActivityNotFoundException) {
+            Log.e(TAG, "Nenhuma aplicação de galeria encontrada.", e)
+            Toast.makeText(requireContext(), "Não foi possível abrir a galeria.", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(context: Context): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = context.getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+
+        if (storageDir == null) {
+            throw IOException("Diretório de armazenamento externo não está disponível.")
+        }
+
+        if (!storageDir.exists()) {
+            if (!storageDir.mkdirs()) {
+                Log.e("createImageFile", "Falha ao criar diretório: $storageDir")
+                throw IOException("Falha ao criar diretório de armazenamento: $storageDir")
+            }
+        }
+
+        return File.createTempFile(
+            "JPEG_${timeStamp}_", /* prefixo */
+            ".jpg",               /* sufixo */
+            storageDir            /* diretório */
+        )
+    }
+
+
+    private fun openCamera() {
+        Log.d(TAG, "Tentando abrir a câmera.")
+        val context = requireContext()
+        try {
+            val photoFile: File = createImageFile(context)
+
+            val photoURI: Uri = FileProvider.getUriForFile(
+                context,
+                "${context.packageName}.provider",
+                photoFile
+            )
+            currentPhotoUri = photoURI
+
+            takePictureLauncher.launch(photoURI)
+            Log.d(TAG, "URI do arquivo da foto para o launcher da câmera: $photoURI")
+
+        } catch (ex: IOException) {
+            Log.e(TAG, "Erro ao criar arquivo para foto.", ex)
+            Toast.makeText(context, "Erro ao preparar câmera.", Toast.LENGTH_SHORT).show()
+            currentPhotoUri = null
+        } catch (ex: ActivityNotFoundException) {
+            Log.e(TAG, "Nenhuma aplicação de câmera encontrada.", ex)
+            Toast.makeText(context, "Câmera não disponível.", Toast.LENGTH_SHORT).show()
+            currentPhotoUri = null
+        } catch (ex: IllegalArgumentException) {
+            Log.e(TAG, "Erro ao obter URI para o arquivo (FileProvider?). Verifique a configuração.", ex)
+            Toast.makeText(context, "Erro ao preparar câmera (URI).", Toast.LENGTH_SHORT).show()
+            currentPhotoUri = null
         }
     }
 
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
         Log.d(TAG, "onCreateOptionsMenu chamado. Inflating menu R.menu.acoes_toolbar na toolbarPerfil")
         inflater.inflate(R.menu.acoes_toolbar, menu)
     }
@@ -150,13 +383,7 @@ class Perfil : Fragment() {
             }
             .setPositiveButton("Sair") { dialog, _ ->
                 Log.d(TAG, "Logout confirmado. Chamando perfilViewModel.logout().")
-                try {
-                    perfilViewModel.logout()
-                } catch (e: Exception) {
-                    Log.e(TAG, "Erro ao chamar perfilViewModel.logout() do diálogo", e)
-                    Toast.makeText(requireContext(), "Erro ao tentar sair.", Toast.LENGTH_SHORT).show()
-                }
-                dialog.dismiss()
+                perfilViewModel.logout()
             }
             .setCancelable(true)
             .show()
@@ -167,14 +394,9 @@ class Perfil : Fragment() {
         activity?.let {
             val intent = Intent(it, Login::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-            try {
-                startActivity(intent)
-                it.finish()
-                Log.d(TAG, "navigateToLogin: LoginActivity iniciada e HomeActivity finalizada.")
-            } catch (e: Exception) {
-                Log.e(TAG, "navigateToLogin: Erro ao iniciar LoginActivity ou finalizar HomeActivity.", e)
-                Toast.makeText(requireContext(), "Erro ao navegar para tela de login.", Toast.LENGTH_SHORT).show()
-            }
+            startActivity(intent)
+            it.finish()
+            Log.d(TAG, "navigateToLogin: LoginActivity iniciada e Activity atual finalizada.")
         } ?: run {
             Log.e(TAG, "navigateToLogin: Activity é null, não foi possível redirecionar.")
         }

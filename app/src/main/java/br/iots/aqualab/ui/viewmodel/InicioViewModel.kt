@@ -1,4 +1,4 @@
-package br.iots.aqualab.ui.viewmodel // Ou seu pacote de ViewModels
+package br.iots.aqualab.ui.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -20,7 +20,7 @@ class InicioViewModel(
 
     fun loadUserProfile() {
         viewModelScope.launch {
-            val result = authRepository.getLoggedInUserProfile() // Função do AuthRepository
+            val result = authRepository.getLoggedInUserProfile()
             result.fold(
                 onSuccess = { profile ->
                     _userProfile.value = profile
