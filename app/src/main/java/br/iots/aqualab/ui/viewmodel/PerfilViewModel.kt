@@ -8,6 +8,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.iots.aqualab.model.UserProfile
 import br.iots.aqualab.repository.AuthRepository
+import br.iots.aqualab.model.UserRole
+import br.iots.aqualab.model.RequestStatus
 import kotlinx.coroutines.launch
 
 sealed class PerfilUIState
@@ -17,6 +19,8 @@ sealed class PerfilUIState
     object LogoutSuccess : PerfilUIState()
     data class Error(val message: String) : PerfilUIState()
     data class UserProfileLoaded(val userProfile: UserProfile) : PerfilUIState()
+    object RoleRequestSuccess : PerfilUIState()
+
 }
 
 class PerfilViewModel(
@@ -108,6 +112,31 @@ class PerfilViewModel(
             } catch (e: Exception) {
                 Log.e(TAG, "uploadProfileImage: Exceção durante o processo de upload.", e)
                 _perfilState.value = PerfilUIState.Error("Erro ao enviar imagem: ${e.message}")
+            }
+        }
+    }
+
+    fun requestResearcherRole() {
+        viewModelScope.launch {
+            _perfilState.value = PerfilUIState.Loading
+            val currentUserProfile = _userProfile.value
+            if (currentUserProfile != null) {
+                val updatedProfile = currentUserProfile.copy(
+                    requestedRole = UserRole.RESEARCHER,
+                    roleRequestStatus = RequestStatus.PENDING
+                )
+                val result = authRepository.updateUserProfile(updatedProfile)
+                result.fold(
+                    onSuccess = {
+                        _userProfile.value = updatedProfile
+                        _perfilState.value = PerfilUIState.RoleRequestSuccess
+                    },
+                    onFailure = { exception ->
+                        _perfilState.value = PerfilUIState.Error("Falha ao solicitar acesso: ${exception.message}")
+                    }
+                )
+            } else {
+                _perfilState.value = PerfilUIState.Error("Usuário não encontrado.")
             }
         }
     }

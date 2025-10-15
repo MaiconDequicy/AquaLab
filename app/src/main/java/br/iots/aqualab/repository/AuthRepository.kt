@@ -1,6 +1,7 @@
 package br.iots.aqualab.repository
 
 import android.net.Uri
+import br.iots.aqualab.model.RequestStatus
 import br.iots.aqualab.model.UserProfile
 import br.iots.aqualab.model.UserRole
 import com.google.firebase.auth.FirebaseAuth
@@ -30,18 +31,12 @@ class AuthRepository {
                         uid = firebaseUser.uid,
                         email = firebaseUser.email,
                         displayName = displayName,
-                        role = UserRole.COMMON
+                        role = UserRole.COMMON,
+                        requestedRole = null,
+                        roleRequestStatus = null
                     )
 
-                    usersCollection.document(firebaseUser.uid).set(
-                        mapOf(
-                            "uid" to newUserProfile.uid,
-                            "email" to newUserProfile.email,
-                            "displayName" to newUserProfile.displayName,
-                            "role" to newUserProfile.role.name,
-                            "photoUrl" to null
-                        )
-                    ).await()
+                    usersCollection.document(firebaseUser.uid).set(newUserProfile).await()
                     Result.success(newUserProfile)
                 }
             } catch (e: Exception) {
@@ -60,26 +55,18 @@ class AuthRepository {
                 } else {
                     val profileSnapshot = usersCollection.document(firebaseUser.uid).get().await()
                     if (profileSnapshot.exists()) {
-                        val displayName = profileSnapshot.getString("displayName")
-                        val photoUrl = profileSnapshot.getString("photoUrl")
-                        val roleString = profileSnapshot.getString("role") ?: UserRole.COMMON.name
-                        val role = UserRole.entries.firstOrNull { it.name == roleString } ?: UserRole.COMMON
-
-                        val userProfile = UserProfile(
-                            uid = firebaseUser.uid,
-                            email = firebaseUser.email,
-                            displayName = displayName,
-                            photoUrl = photoUrl,
-                            role = role
-                        )
-                        Result.success(userProfile)
+                        val userProfile = profileSnapshot.toObject(UserProfile::class.java)
+                        if (userProfile != null) {
+                            Result.success(userProfile)
+                        } else {
+                            Result.failure(Exception("Falha ao converter snapshot para UserProfile"))
+                        }
                     } else {
-
                         Result.success(
                             UserProfile(
                                 uid = firebaseUser.uid,
                                 email = firebaseUser.email,
-                                role = UserRole.COMMON // Papel padrão
+                                role = UserRole.COMMON
                             )
                         )
                     }
@@ -101,18 +88,8 @@ class AuthRepository {
                 try {
                     val profileSnapshot = usersCollection.document(firebaseUser.uid).get().await()
                     if (profileSnapshot.exists()) {
-                        val displayName = profileSnapshot.getString("displayName")
-                        val photoUrl = profileSnapshot.getString("photoUrl")
-                        val roleString = profileSnapshot.getString("role") ?: UserRole.COMMON.name
-                        val role = UserRole.entries.firstOrNull { it.name == roleString } ?: UserRole.COMMON
-
-                        Result.success(UserProfile(
-                            uid = firebaseUser.uid,
-                            email = firebaseUser.email,
-                            displayName = displayName,
-                            photoUrl = photoUrl,
-                            role = role
-                        ))
+                        val userProfile = profileSnapshot.toObject(UserProfile::class.java)
+                        Result.success(userProfile)
                     } else {
                         Result.success(UserProfile(uid = firebaseUser.uid, email = firebaseUser.email, role = UserRole.COMMON))
                     }
@@ -129,7 +106,6 @@ class AuthRepository {
         firebaseAuth.signOut()
     }
 
-
     suspend fun uploadProfileImage(imageUri: Uri): Result<String> {
         return withContext(Dispatchers.IO) {
             try {
@@ -137,12 +113,9 @@ class AuthRepository {
                 if (user == null) {
                     Result.failure(Exception("Usuário não autenticado para fazer upload da imagem."))
                 } else {
-
                     val fileName = "${user.uid}.jpg"
                     val storageRef = firebaseStorage.reference.child("profile_images/$fileName")
-
-                    val uploadTask = storageRef.putFile(imageUri).await()
-                    val downloadUrl = uploadTask.storage.downloadUrl.await().toString()
+                    val downloadUrl = storageRef.putFile(imageUri).await().storage.downloadUrl.await().toString()
                     Result.success(downloadUrl)
                 }
             } catch (e: Exception) {
@@ -154,27 +127,26 @@ class AuthRepository {
     suspend fun updateUserProfile(userProfile: UserProfile): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                val user = firebaseAuth.currentUser
-                if (user == null || user.uid != userProfile.uid) {
-                    Result.failure(Exception("Usuário não autenticado ou UID não corresponde para atualizar o perfil."))
-                } else {
-                    val profileUpdates = mutableMapOf<String, Any?>()
+                usersCollection.document(userProfile.uid).set(userProfile).await()
+                Result.success(Unit)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
 
-                    if (userProfile.displayName != null) profileUpdates["displayName"] = userProfile.displayName
+    suspend fun getPendingRoleRequests(): Result<List<UserProfile>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val querySnapshot = usersCollection
+                    .whereEqualTo("roleRequestStatus", RequestStatus.PENDING.name)
+                    .get()
+                    .await()
 
-                    if (userProfile.photoUrl != null) {
-                        profileUpdates["photoUrl"] = userProfile.photoUrl
-                    } else {
-
-                    }
-
-                    if (profileUpdates.isNotEmpty()) {
-                        usersCollection.document(user.uid).update(profileUpdates).await()
-                        Result.success(Unit)
-                    } else {
-                        Result.success(Unit)
-                    }
+                val users = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(UserProfile::class.java)
                 }
+                Result.success(users)
             } catch (e: Exception) {
                 Result.failure(e)
             }

@@ -23,6 +23,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import br.iots.aqualab.R
 import br.iots.aqualab.databinding.FragmentPerfilBinding
+import br.iots.aqualab.model.RequestStatus
 import br.iots.aqualab.model.UserProfile
 import br.iots.aqualab.model.UserRole
 import br.iots.aqualab.ui.activities.Login
@@ -142,6 +143,10 @@ class Perfil : Fragment() {
             showImageSourceDialog()
         }
 
+        binding.botaoSolicitarAcesso.setOnClickListener {
+            perfilViewModel.requestResearcherRole()
+        }
+
         perfilViewModel.userProfile.observe(viewLifecycleOwner) { userProfile ->
             Log.d(TAG, "userProfile LiveData OBSERVED. UserProfile: $userProfile")
             if (userProfile != null) {
@@ -177,6 +182,10 @@ class Perfil : Fragment() {
                     updateUIWithUserProfile(state.userProfile)
                     Toast.makeText(requireContext(), "Foto de perfil atualizada com sucesso!", Toast.LENGTH_SHORT).show()
                 }
+                is PerfilUIState.RoleRequestSuccess -> {
+                    Log.d(TAG, "Estado RoleRequestSuccess recebido.")
+                    Toast.makeText(requireContext(), "Solicitação de acesso enviada com sucesso!", Toast.LENGTH_SHORT).show()
+                }
                 is PerfilUIState.Idle -> {
                     Log.d(TAG, "Estado Idle recebido")
                 }
@@ -198,7 +207,7 @@ class Perfil : Fragment() {
         val userTypeString = when (userProfile.role) {
             UserRole.COMMON -> "Usuário Comum"
             UserRole.RESEARCHER -> "Pesquisador"
-            else -> "Tipo Desconhecido"
+            UserRole.ADMIN -> "Administrador"
         }
         binding.textoTipoUsuario.text = userTypeString
 
@@ -214,6 +223,27 @@ class Perfil : Fragment() {
                 .load(R.drawable.perfil)
                 .circleCrop()
                 .into(binding.imageViewPerfil)
+        }
+
+        when {
+            userProfile.role == UserRole.RESEARCHER || userProfile.role == UserRole.ADMIN -> {
+                binding.cardAcessoPesquisador.visibility = View.GONE
+            }
+            userProfile.roleRequestStatus == RequestStatus.PENDING -> {
+                binding.cardAcessoPesquisador.visibility = View.VISIBLE
+                binding.botaoSolicitarAcesso.isEnabled = false
+                binding.botaoSolicitarAcesso.text = "Solicitação Pendente"
+            }
+            userProfile.roleRequestStatus == RequestStatus.REJECTED -> {
+                binding.cardAcessoPesquisador.visibility = View.VISIBLE
+                binding.botaoSolicitarAcesso.isEnabled = true
+                binding.botaoSolicitarAcesso.text = "Solicitar Novamente"
+            }
+            else -> { // COMMON user, no pending/rejected request
+                binding.cardAcessoPesquisador.visibility = View.VISIBLE
+                binding.botaoSolicitarAcesso.isEnabled = true
+                binding.botaoSolicitarAcesso.text = "Solicitar"
+            }
         }
     }
 
