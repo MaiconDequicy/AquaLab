@@ -1,18 +1,26 @@
 package br.iots.aqualab.ui.activities
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.util.Log
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import br.iots.aqualab.R
+import br.iots.aqualab.model.UserRole
 import br.iots.aqualab.ui.fragments.Artigos
 import br.iots.aqualab.ui.fragments.Inicio
 import br.iots.aqualab.ui.fragments.Mapa
 import br.iots.aqualab.ui.fragments.Perfil
+import br.iots.aqualab.ui.fragments.Dashboard
+import br.iots.aqualab.ui.fragments.Admin
+import br.iots.aqualab.ui.fragments.InicioResearcher
+import br.iots.aqualab.ui.viewmodel.HomeViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class Home : AppCompatActivity() {
+
+    private val homeViewModel: HomeViewModel by viewModels()
+    private lateinit var bottomNavigation: BottomNavigationView
 
     companion object {
         private const val TAG = "HomeActivity"
@@ -22,23 +30,45 @@ class Home : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
 
-        val bottomNavigation = findViewById<BottomNavigationView>(R.id.bottomNavigationViewHome)
-        if (savedInstanceState == null) {
-            replaceFragment(Inicio())
-        }
+        bottomNavigation = findViewById(R.id.bottomNavigationViewHome)
 
+        homeViewModel.userProfile.observe(this) { userProfile ->
+            val menuResId = when (userProfile?.role) {
+                UserRole.ADMIN -> R.menu.bottom_nav_menu_admin
+                UserRole.RESEARCHER -> R.menu.bottom_nav_menu_researcher
+                else -> R.menu.bottom_nav_menu // COMMON ou null
+            }
+            bottomNavigation.menu.clear()
+            bottomNavigation.inflateMenu(menuResId)
+            setupBottomNavigationListener()
+
+            if (savedInstanceState == null) {
+
+                bottomNavigation.selectedItemId = R.id.nav_home
+            }
+        }
+    }
+
+    private fun setupBottomNavigationListener() {
         bottomNavigation.setOnItemSelectedListener { menuItem ->
             Log.d(TAG, "BottomNavigation item selecionado: ${menuItem.title}")
-            when (menuItem.itemId) {
-                R.id.nav_home -> replaceFragment(Inicio())
-                R.id.nav_lupa -> replaceFragment(Artigos())
-                R.id.nav_mapa -> replaceFragment(Mapa())
-                R.id.nav_usuario -> replaceFragment(Perfil())
-                else -> {
-                    Log.w(TAG, "Item de menu não tratado no BottomNavigationView: ${menuItem.itemId}")
+            val fragment = when (menuItem.itemId) {
+                R.id.nav_home -> Inicio()
+                // Itens do menu comum
+                R.id.nav_inicio_research -> InicioResearcher()
+                R.id.nav_lupa -> Artigos()
+                R.id.nav_mapa -> Mapa()
+                // Item exclusivo do menu de admin
+                R.id.nav_admin -> Admin()
+                // Item comum a todos
+                R.id.nav_usuario -> Perfil()
 
+                else -> {
+                    Log.w(TAG, "Item de menu não tratado: ${menuItem.itemId}")
+                    null
                 }
             }
+            fragment?.let { replaceFragment(it) }
             true
         }
     }
@@ -49,6 +79,4 @@ class Home : AppCompatActivity() {
             .replace(R.id.fragment_container, fragment)
             .commit()
     }
-
 }
-
