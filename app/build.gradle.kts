@@ -3,8 +3,8 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("com.google.devtools.ksp") // Agora aplicamos o plugin definido no projeto
-    id("com.google.gms.google-services") // ATIVANDO o plugin do Firebase aqui
+    id("com.google.devtools.ksp")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -54,11 +54,11 @@ dependencies {
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
 
-    // Firebase BoM (Bill of Materials) - Gerencia as versões das libs do Firebase
     implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
 
-    implementation("com.google.firebase:firebase-auth-ktx") // Para Autenticação
-    implementation("com.google.firebase:firebase-firestore-ktx") // Para o banco de dados em nuvem
+    implementation("com.google.firebase:firebase-auth-ktx")
+    implementation("com.google.firebase:firebase-firestore-ktx")
+    implementation("com.google.firebase:firebase-storage-ktx")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.8.1")
@@ -76,4 +76,8 @@ dependencies {
 
     // Mapas
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+
+    
 }

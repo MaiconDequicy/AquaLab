@@ -3,7 +3,8 @@ package br.iots.aqualab.model
 enum class UserRole
 {
     COMMON,
-    RESEARCHER
+    RESEARCHER,
+    ADMIN
 }
 
 enum class RequestStatus
