@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarTelaIntegraPontos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@android:color/transparent"
+            app:navigationIcon="@drawable/arrow_back_24"
+            app:navigationIconTint="@color/blue"
+            app:title="" />
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:id="@+id/textViewArtigosNoticiasTitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="Crie um Novo Ponto de Coleta"
+                    android:textAppearance="?attr/textAppearanceHeadline5"
+                    android:textColor="@color/blue" />
+
+                <TextView
+                    android:id="@+id/textViewArtigosNoticiasSubtitulo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="Integre um novo ponto de coleta na aplicação via id do ponto na nuvem"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:textColor="@color/light_gray"
+                    android:layout_marginBottom="16dp" />
+
+                <ImageView
+                    android:id="@+id/imageViewMapIcon"
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="16dp"
+                    android:contentDescription="Ícone de ponto de coleta"
+                    android:src="@drawable/ponto_marker" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutNomePonto"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/blue"
+                    app:cursorColor="@color/blue"
+                    app:hintTextColor="@color/blue"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:startIconDrawable="@drawable/name_24dp"
+                    android:hint="Nome do Ponto de Coleta"
+                    app:startIconTint="@color/blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campoNomePonto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="@color/blue_700"
+                        android:textSize="16sp"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutTipoPonto"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/blue"
+                    app:cursorColor="@color/blue"
+                    app:hintTextColor="@color/blue"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:startIconDrawable="@drawable/category_24dp"
+                    android:hint="Tipo de Ponto de Coleta"
+                    app:startIconTint="@color/blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campoTipoPonto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="@color/blue_700"
+                        android:textSize="16sp"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutLocalPonto"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/blue"
+                    app:cursorColor="@color/blue"
+                    app:hintTextColor="@color/blue"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:startIconDrawable="@drawable/location_24dp"
+                    android:hint="Localização"
+                    app:startIconTint="@color/blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campoLocalPonto"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="@color/blue_700"
+                        android:textSize="16sp"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/textInputLayoutIDPontoNuvem"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:boxStrokeColor="@color/blue"
+                    app:cursorColor="@color/blue"
+                    app:hintTextColor="@color/blue"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:startIconDrawable="@drawable/cloud_24dp"
+                    android:hint="ID do Ponto na Nuvem"
+                    app:startIconTint="@color/blue">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/campoLocalIDPontoNuvem"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:maxLines="1"
+                        android:fontFamily="@font/poppins"
+                        android:textColor="@color/blue_700"
+                        android:textSize="16sp"
+                        />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardViewUpload"
+                    android:layout_width="match_parent"
+                    android:layout_height="150dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    app:cardCornerRadius="8dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/light_gray"
+                    app:strokeWidth="1dp">
+
+                    <ImageView
+                        android:id="@+id/imageViewUploadPlaceholder"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:layout_gravity="center"
+                        android:src="@drawable/midia_24"
+                        android:contentDescription="Adicionar mídia" />
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/botaoCriarPonto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:backgroundTint="@color/blue"
+                    android:paddingVertical="12dp"
+                    android:text="Salvar"
+                    android:fontFamily="@font/poppins_bold"
+                    app:cornerRadius="10dp" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
