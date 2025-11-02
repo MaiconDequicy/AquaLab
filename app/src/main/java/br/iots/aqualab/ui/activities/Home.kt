@@ -13,6 +13,7 @@ import br.iots.aqualab.ui.fragments.Mapa
 import br.iots.aqualab.ui.fragments.Perfil
 import br.iots.aqualab.ui.fragments.Dashboard
 import br.iots.aqualab.ui.fragments.Admin
+import br.iots.aqualab.ui.fragments.CriacaoPontosColeta
 import br.iots.aqualab.ui.fragments.InicioResearcher
 import br.iots.aqualab.ui.viewmodel.HomeViewModel
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -36,7 +37,7 @@ class Home : AppCompatActivity() {
             val menuResId = when (userProfile?.role) {
                 UserRole.ADMIN -> R.menu.bottom_nav_menu_admin
                 UserRole.RESEARCHER -> R.menu.bottom_nav_menu_researcher
-                else -> R.menu.bottom_nav_menu // COMMON ou null
+                else -> R.menu.bottom_nav_menu
             }
             bottomNavigation.menu.clear()
             bottomNavigation.inflateMenu(menuResId)
@@ -63,6 +64,8 @@ class Home : AppCompatActivity() {
                 // Item comum a todos
                 R.id.nav_usuario -> Perfil()
 
+                R.id.nav_pontosColeta -> CriacaoPontosColeta()
+
                 else -> {
                     Log.w(TAG, "Item de menu não tratado: ${menuItem.itemId}")
                     null
@@ -77,6 +80,7 @@ class Home : AppCompatActivity() {
         Log.d(TAG, "replaceFragment chamado para: ${fragment.javaClass.simpleName}")
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
+            .addToBackStack(null)
             .commit()
     }
 }
