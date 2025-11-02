@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="15dp"
+    app:cardCornerRadius="16dp"
+    app:strokeColor="@color/cinza_fraco"
+    app:strokeWidth="1dp">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+    <View
+        android:id="@+id/view_icone_placeholder"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="@drawable/shape_circle_gray"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_nome_ponto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:fontFamily="@font/poppins_bold"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:textStyle="bold"
+        android:textColor="@color/blue_700"
+        app:layout_constraintEnd_toStartOf="@id/iv_chevron"
+        app:layout_constraintStart_toEndOf="@id/view_icone_placeholder"
+        app:layout_constraintTop_toTopOf="@id/view_icone_placeholder"
+        tools:ignore="INPA - Tanque"
+         />
+
+    <TextView
+        android:id="@+id/tv_tipo_ponto"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textColor="@android:color/darker_gray"
+        app:layout_constraintEnd_toEndOf="@id/tv_nome_ponto"
+        app:layout_constraintStart_toStartOf="@id/tv_nome_ponto"
+        app:layout_constraintTop_toBottomOf="@id/tv_nome_ponto"
+        tools:text="Tipo: PH" />
+
+    <ImageView
+        android:id="@+id/iv_chevron"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/chevron_icon_24"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:tint="@android:color/darker_gray" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

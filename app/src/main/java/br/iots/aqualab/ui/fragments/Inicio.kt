@@ -5,9 +5,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels // Para by viewModels()
-import br.iots.aqualab.R // Ainda necessário para o layout R.layout.fragment_inicio
-import br.iots.aqualab.databinding.FragmentInicioBinding // Import para ViewBinding
+import androidx.fragment.app.viewModels
+import br.iots.aqualab.databinding.FragmentInicioBinding
 import br.iots.aqualab.ui.viewmodel.InicioViewModel
 
 class Inicio : Fragment() {
