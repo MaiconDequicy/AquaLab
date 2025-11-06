@@ -22,6 +22,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AquaLab">
         <activity
+            android:name=".ui.activities.DetalhesPontoColeta"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.IntegracaoPontoColeta"
             android:exported="false" />
 

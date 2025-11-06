@@ -11,6 +11,8 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.iots.aqualab.R
 import br.iots.aqualab.databinding.FragmentCriacaoPontosColetaBinding
+import br.iots.aqualab.model.PontoColeta
+import br.iots.aqualab.ui.activities.DetalhesPontoColeta
 import br.iots.aqualab.ui.activities.IntegracaoPontoColeta
 import br.iots.aqualab.ui.adapter.PontoColetaAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
@@ -67,7 +69,6 @@ class CriacaoPontosColeta : Fragment() {
 
         fabImportar.setOnClickListener {
             val intent = Intent(activity, IntegracaoPontoColeta::class.java)
-
             startActivity(intent)
         }
     }
@@ -85,7 +86,9 @@ class CriacaoPontosColeta : Fragment() {
     }
 
     private fun configurarRecyclerView() {
-        pontoColetaAdapter = PontoColetaAdapter(emptyList())
+        pontoColetaAdapter = PontoColetaAdapter(emptyList()) { pontoSelecionado ->
+            abrirDetalhesDoPonto(pontoSelecionado)
+        }
 
         binding.recyclerViewPontosColeta.apply {
             layoutManager = LinearLayoutManager(context)
@@ -95,6 +98,7 @@ class CriacaoPontosColeta : Fragment() {
 
     private fun observarViewModel() {
         pontosviewModel.pontosColeta.observe(viewLifecycleOwner) { listaPontos ->
+
             pontoColetaAdapter.atualizarLista(listaPontos)
         }
 
@@ -106,6 +110,13 @@ class CriacaoPontosColeta : Fragment() {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun abrirDetalhesDoPonto(ponto: PontoColeta) {
+        val intent = Intent(requireActivity(), DetalhesPontoColeta::class.java).apply {
+            putExtra("PONTO_COLETA_EXTRA", ponto)
+        }
+        startActivity(intent)
     }
 
     override fun onDestroyView() {

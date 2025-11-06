@@ -1,39 +1,42 @@
 package br.iots.aqualab.ui.adapter
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import br.iots.aqualab.databinding.ItemPontoColetaBinding
+import br.iots.aqualab.R
 import br.iots.aqualab.model.PontoColeta
 
 class PontoColetaAdapter(
-    private var pontos: List<PontoColeta>
+    private var pontos: List<PontoColeta>,
+    private val onItemClicked: (PontoColeta) -> Unit
 ) : RecyclerView.Adapter<PontoColetaAdapter.PontoColetaViewHolder>() {
 
-    inner class PontoColetaViewHolder(val binding: ItemPontoColetaBinding) : RecyclerView.ViewHolder(binding.root) {
+    class PontoColetaViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        private val nomePonto: TextView = itemView.findViewById(R.id.tv_nome_ponto)
+        private val tipoPonto: TextView = itemView.findViewById(R.id.tv_tipo_ponto)
 
-        fun bind(ponto: PontoColeta) {
-            binding.tvNomePonto.text = ponto.nome
-            binding.tvTipoPonto.text = ponto.tipo
-            //binding.textViewEndereco.text = ponto.endereco
-            //binding.textViewStatus.text = ponto.status
+        fun bind(ponto: PontoColeta, onItemClicked: (PontoColeta) -> Unit) {
+            nomePonto.text = ponto.nome
+            tipoPonto.text = "Tipo: ${ponto.tipo}"
+
+            itemView.setOnClickListener {
+                onItemClicked(ponto)
+            }
         }
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PontoColetaViewHolder {
-        val binding = ItemPontoColetaBinding.inflate(
-            LayoutInflater.from(parent.context),
-            parent,
-            false
-        )
-        return PontoColetaViewHolder(binding)
+        val view = LayoutInflater.from(parent.context)
+            .inflate(R.layout.item_ponto_coleta, parent, false)
+        return PontoColetaViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PontoColetaViewHolder, position: Int) {
-        holder.bind(pontos[position])
+        holder.bind(pontos[position], onItemClicked)
     }
-
-    override fun getItemCount(): Int = pontos.size
+    override fun getItemCount() = pontos.size
 
     fun atualizarLista(novaLista: List<PontoColeta>) {
         pontos = novaLista
