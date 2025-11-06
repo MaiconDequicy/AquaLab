@@ -1,218 +1,265 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:layout_width="match_parent"
-    android:layout_height="match_parent"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbarDetalhesPonto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:navigationIcon="@drawable/arrow_back_24"
-        app:navigationIconTint="@color/blue"
-        app:title="" />
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <ScrollView
+    <!-- Seu Conteúdo Principal (Toolbar e ScrollView) -->
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-        <LinearLayout
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbarDetalhesPonto"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="16dp">
+            android:background="@android:color/transparent"
+            app:navigationIcon="@drawable/arrow_back_24"
+            app:navigationIconTint="@color/blue"
+            app:title="" />
 
-            <TextView
-                android:id="@+id/textViewDetalhesPonto"
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:fontFamily="@font/poppins_bold"
-                android:text="Detalhes do Ponto"
-                android:textAppearance="?attr/textAppearanceHeadline5"
-                android:textColor="@color/blue" />
+                android:orientation="vertical"
+                android:padding="16dp">
 
-            <TextView
-                android:id="@+id/textViewNomePonto"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="4dp"
-                android:fontFamily="@font/poppins"
-                android:text="Ponto de Coleta: INPA - Tanque"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:textColor="@color/light_gray"
-                android:layout_marginBottom="16dp" />
-
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:strokeColor="@color/cinza_fraco"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
+                <!-- Todo o seu conteúdo de TextViews e MaterialCardViews permanece aqui... -->
+                <TextView
+                    android:id="@+id/textViewDetalhesPonto"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:fontFamily="@font/poppins_bold"
+                    android:text="Detalhes do Ponto"
+                    android:textAppearance="?attr/textAppearanceHeadline5"
+                    android:textColor="@color/blue" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="Status Atual"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
-                        android:textColor="@color/blue_700" />
+                <TextView
+                    android:id="@+id/textViewNomePonto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:fontFamily="@font/poppins"
+                    android:text="Ponto de Coleta: INPA - Tanque"
+                    android:textAppearance="?attr/textAppearanceBody1"
+                    android:textColor="@color/light_gray"
+                    android:layout_marginBottom="16dp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/cinza_fraco"
+                    app:strokeWidth="1dp">
+
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Status Atual"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            android:textColor="@color/blue_700" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="Classificação: "
+                                android:textAppearance="?attr/textAppearanceBody1"
+                                android:textColor="@color/grayyyy" />
+
+                            <ImageView
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:layout_marginEnd="8dp"
+                                android:src="@drawable/ic_circulo"
+                                app:tint="@color/status_verde" />
+                            <TextView
+                                android:id="@+id/tv_classificacao"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/poppins"
+                                android:text="Boa"
+                                android:textAppearance="?attr/textAppearanceBody1"
+                                android:textColor="@color/grayyyy"/>
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_ultima_leitura"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
                             android:fontFamily="@font/poppins"
-                            android:text="Classificação: "
+                            android:text="Última Leitura: 7.2 pH (hoje, 15:30)"
                             android:textAppearance="?attr/textAppearanceBody1"
                             android:textColor="@color/grayyyy" />
 
-                        <ImageView
-                            android:layout_width="12dp"
-                            android:layout_height="12dp"
-                            android:layout_marginEnd="8dp"
-                            android:src="@drawable/ic_circulo"
-                            app:tint="@color/status_verde" />
                         <TextView
-                            android:id="@+id/tv_classificacao"
+                            android:id="@+id/tv_status_operacional"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/poppins"
-                            android:text="Boa"
+                            android:text="Status Operacional: Ativo"
                             android:textAppearance="?attr/textAppearanceBody1"
-                            android:textColor="@color/grayyyy"/>
+                            android:textColor="@color/grayyyy" />
                     </LinearLayout>
-                    <TextView
-                        android:id="@+id/tv_ultima_leitura"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/poppins"
-                        android:text="Última Leitura: 7.2 pH (hoje, 15:30)"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        android:textColor="@color/grayyyy" />
-
-                    <TextView
-                        android:id="@+id/tv_status_operacional"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins"
-                        android:text="Status Operacional: Ativo"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        android:textColor="@color/grayyyy" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                </com.google.android.material.card.MaterialCardView>
 
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:strokeColor="@color/cinza_fraco"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="Histórico Recente"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
-                        android:textColor="@color/blue_700" />
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/cinza_fraco"
+                    app:strokeWidth="1dp">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:fontFamily="@font/poppins"
-                        android:text="(Mini gráfico das últimas 24h)"
-                        android:textAppearance="?attr/textAppearanceBody2"
-                        android:textColor="@color/grayyyy" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Histórico Recente"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            android:textColor="@color/blue_700" />
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnVerHistorico"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:backgroundTint="@color/blue"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="Ver Histórico Completo"
-                        app:cornerRadius="20dp" />
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="16dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="(Mini gráfico das últimas 24h)"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="@color/grayyyy" />
 
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnVerHistorico"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:backgroundTint="@color/blue"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Ver Histórico Completo"
+                            app:cornerRadius="20dp" />
 
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:strokeColor="@color/cinza_fraco"
-                app:strokeWidth="1dp">
-                <LinearLayout
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/cinza_fraco"
+                    app:strokeWidth="1dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:fontFamily="@font/poppins_bold"
-                        android:text="Informações Cadastrais"
-                        android:textAppearance="?attr/textAppearanceHeadline6"
-                        android:textColor="@color/blue_700" />
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                    <TextView
-                        android:id="@+id/tv_nome_cadastral"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/poppins"
-                        android:text="Nome: INPA - Tanque"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        android:textColor="@color/grayyyy" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="12dp"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Informações Cadastrais"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            android:textColor="@color/blue_700" />
 
-                    <TextView
-                        android:id="@+id/tv_tipo_ponto_cadastral"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/poppins"
-                        android:text="Tipo de Ponto: Lago"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        android:textColor="@color/grayyyy" />
+                        <TextView
+                            android:id="@+id/tv_nome_cadastral"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Nome: INPA - Tanque"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="@color/grayyyy" />
 
-                    <TextView
-                        android:id="@+id/tv_localizacao_cadastral"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:fontFamily="@font/poppins"
-                        android:text="Localização: -3.107, -60.025"
-                        android:textAppearance="?attr/textAppearanceBody1"
-                        android:textColor="@color/grayyyy" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        <TextView
+                            android:id="@+id/tv_tipo_ponto_cadastral"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:fontFamily="@font/poppins"
+                            android:text="Tipo de Ponto: Lago"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="@color/grayyyy" />
 
-        </LinearLayout>
-    </ScrollView>
-</LinearLayout>
+                        <TextView
+                            android:id="@+id/tv_localizacao_cadastral"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins"
+                            android:text="Localização: -3.107, -60.025"
+                            android:textAppearance="?attr/textAppearanceBody1"
+                            android:textColor="@color/grayyyy" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_acao_secundaria_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="92dp"
+        android:visibility="invisible"
+        android:backgroundTint="@color/blue_700"
+        app:fabSize="mini"
+        app:tint="@android:color/white"
+        app:srcCompat="@drawable/edit_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_acao_secundaria_2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="148dp"
+        android:visibility="invisible"
+        app:fabSize="mini"
+        app:tint="@android:color/white"
+        android:backgroundTint="@color/blue_700"
+        app:srcCompat="@drawable/delete_24dp" />
+
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_ConfigPontoColeta"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/blue_700"
+        app:srcCompat="@drawable/build_24dp"
+        app:tint="@android:color/white" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

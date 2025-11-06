@@ -14,6 +14,7 @@ import br.iots.aqualab.databinding.FragmentCriacaoPontosColetaBinding
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.ui.activities.DetalhesPontoColeta
 import br.iots.aqualab.ui.activities.IntegracaoPontoColeta
+import br.iots.aqualab.ui.activities.LancamentoManual
 import br.iots.aqualab.ui.adapter.PontoColetaAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -64,11 +65,14 @@ class CriacaoPontosColeta : Fragment() {
 
         fabAddManual.setOnClickListener {
             Toast.makeText(context, "Adicionar manualmente clicado", Toast.LENGTH_SHORT).show()
+            val intent = Intent(activity, LancamentoManual::class.java)
+            startActivity(intent)
             toggleFabMenu()
         }
 
         fabImportar.setOnClickListener {
             val intent = Intent(activity, IntegracaoPontoColeta::class.java)
+            Toast.makeText(context, "Integrar Ponto de Coleta clicado", Toast.LENGTH_SHORT).show()
             startActivity(intent)
         }
     }

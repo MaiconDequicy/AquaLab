@@ -4,9 +4,11 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import br.iots.aqualab.R
 import br.iots.aqualab.databinding.ActivityIntegracaoPontoColetaBinding
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
+import com.google.android.material.appbar.MaterialToolbar
 
 class IntegracaoPontoColeta : AppCompatActivity() {
 
@@ -19,6 +21,15 @@ class IntegracaoPontoColeta : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityIntegracaoPontoColetaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbarTelaIntegraPontos)
+
+        setSupportActionBar(toolbar)
+        supportActionBar?.title = ""
+
+        toolbar.setNavigationOnClickListener {
+            finish()
+        }
 
         configurarListenerBotaoSalvar()
         observarViewModel()
