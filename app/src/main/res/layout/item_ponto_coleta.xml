@@ -39,6 +39,8 @@
         tools:ignore="INPA - Tanque"
          />
 
+
+
     <TextView
         android:id="@+id/tv_tipo_ponto"
         android:layout_width="0dp"

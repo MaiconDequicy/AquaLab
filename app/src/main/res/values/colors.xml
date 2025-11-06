@@ -14,5 +14,9 @@
     <color name="blue_700">#0D47A1</color>
     <color name="grayyyy">#575757</color>
     <color name="cinza_fraco">#D9D9D9</color>
-
+    <color name="status_azul">#053A93</color>
+    <color name="status_verde">#00C907</color>
+    <color name="status_amarelo">#FBBC05</color>
+    <color name="status_laranja">#FF8800</color>
+    <color name="status_vermelho">#F10606</color>
 </resources>
