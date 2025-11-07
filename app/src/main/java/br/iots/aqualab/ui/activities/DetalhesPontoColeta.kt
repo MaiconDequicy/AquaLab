@@ -1,19 +1,45 @@
 package br.iots.aqualab.ui.activities
 
+import android.app.Activity
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
-
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import br.iots.aqualab.databinding.ActivityDetalhesPontoColetaBinding
 import br.iots.aqualab.model.PontoColeta
+import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 
 class DetalhesPontoColeta : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetalhesPontoColetaBinding
     private var isSpeedDialOpen = false
+    private var pontoColetaAtual: PontoColeta? = null
+    private val viewModel: CriacaoPontosColetaViewModel by viewModels()
+
+
+    private val edicaoPontoResultLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val pontoAtualizado = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                result.data?.getParcelableExtra("PONTO_ATUALIZADO_EXTRA", PontoColeta::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                result.data?.getParcelableExtra<PontoColeta>("PONTO_ATUALIZADO_EXTRA")
+            }
+            pontoAtualizado?.let {
+                // this.pontoColetaAtual = it -> preencherDados já faz isso
+                preencherDados(it)
+                Toast.makeText(this, "Ponto atualizado!", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,17 +52,42 @@ class DetalhesPontoColeta : AppCompatActivity() {
             finish()
         }
 
-        val ponto = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val pontoInicial = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PONTO_COLETA_EXTRA", PontoColeta::class.java)
         } else {
             @Suppress("DEPRECATION")
             intent.getParcelableExtra<PontoColeta>("PONTO_COLETA_EXTRA")
         }
 
-        ponto?.let {
+        pontoInicial?.let {
             preencherDados(it)
         }
+
+        observarViewModel()
     }
+
+    private fun observarViewModel() {
+        viewModel.pontoDeletado.observe(this) { deletado ->
+            if (deletado) {
+                Toast.makeText(this, "Ponto removido com sucesso", Toast.LENGTH_LONG).show()
+
+                val resultadoIntent = Intent().apply {
+                    putExtra("PONTO_ID_EXTRA", pontoColetaAtual?.id)
+                }
+                setResult(Activity.RESULT_OK, resultadoIntent)
+                viewModel.resetarStatusOperacao() // Limpa o estado no ViewModel
+                finish() // Fecha a tela de detalhes
+            }
+        }
+
+        viewModel.errorMessage.observe(this) { error ->
+            error?.let {
+                Toast.makeText(this, "Falha na operação: $it", Toast.LENGTH_LONG).show()
+                viewModel.resetarStatusOperacao()
+            }
+        }
+    }
+
 
     private fun configurarFabSpeedDial() {
         binding.fabAcaoSecundaria1.visibility = View.GONE
@@ -53,28 +104,29 @@ class DetalhesPontoColeta : AppCompatActivity() {
         }
 
         binding.fabAcaoSecundaria1.setOnClickListener {
-            // Exemplo de ação
-            Toast.makeText(this, "Ação de Editar Clicada", Toast.LENGTH_SHORT).show()
+            pontoColetaAtual?.let { ponto ->
+                val intent = Intent(this, IntegracaoPontoColeta::class.java).apply {
+                    putExtra("PONTO_PARA_EDITAR_EXTRA", ponto)
+                }
+                edicaoPontoResultLauncher.launch(intent)
+            }
             fecharSpeedDial()
         }
 
         binding.fabAcaoSecundaria2.setOnClickListener {
-
-            Toast.makeText(this, "Ação de Deletar Clicada", Toast.LENGTH_SHORT).show()
+            removerPontoDeColeta()
             fecharSpeedDial()
         }
     }
 
     private fun abrirSpeedDial() {
         binding.fabConfigPontoColeta.animate().rotation(45f).setDuration(300).start()
-
         mostrarBotaoSpeedDial(binding.fabAcaoSecundaria1)
         mostrarBotaoSpeedDial(binding.fabAcaoSecundaria2)
     }
 
     private fun fecharSpeedDial() {
         binding.fabConfigPontoColeta.animate().rotation(0f).setDuration(300).start()
-
         esconderBotaoSpeedDial(binding.fabAcaoSecundaria1)
         esconderBotaoSpeedDial(binding.fabAcaoSecundaria2)
     }
@@ -102,6 +154,7 @@ class DetalhesPontoColeta : AppCompatActivity() {
     }
 
     private fun preencherDados(ponto: PontoColeta) {
+        pontoColetaAtual = ponto
         binding.textViewNomePonto.text = "Ponto de Coleta: ${ponto.nome}"
         binding.tvClassificacao.text = "Boa"
         binding.tvStatusOperacional.text = "Status Operacional: ${ponto.status}"
@@ -109,5 +162,13 @@ class DetalhesPontoColeta : AppCompatActivity() {
         binding.tvNomeCadastral.text = "Nome: ${ponto.nome}"
         binding.tvTipoPontoCadastral.text = "Tipo de Ponto: ${ponto.tipo}"
         binding.tvLocalizacaoCadastral.text = "Endereço: ${ponto.endereco}"
+    }
+
+    private fun removerPontoDeColeta() {
+        pontoColetaAtual?.let { pontoParaRemover ->
+            viewModel.deletarPonto(pontoParaRemover)
+        } ?: run {
+            Toast.makeText(this, "Não foi possível identificar o ponto para remoção.", Toast.LENGTH_LONG).show()
+        }
     }
 }

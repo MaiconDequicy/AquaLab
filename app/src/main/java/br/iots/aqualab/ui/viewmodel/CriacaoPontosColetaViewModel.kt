@@ -21,6 +21,13 @@ class CriacaoPontosColetaViewModel : ViewModel() {
     private val _isLoading = MutableLiveData<Boolean>()
     val isLoading: LiveData<Boolean> = _isLoading
 
+    private val _operacaoConcluida = MutableLiveData<Boolean>(false)
+    val operacaoConcluida: LiveData<Boolean> = _operacaoConcluida
+
+    private val _pontoDeletado = MutableLiveData<Boolean>(false)
+    val pontoDeletado: LiveData<Boolean> = _pontoDeletado
+
+
     init {
         carregarPontosDeColetaDoUsuario()
     }
@@ -51,5 +58,38 @@ class CriacaoPontosColetaViewModel : ViewModel() {
                 _errorMessage.value = "Erro ao criar ponto: ${exception.message}"
             }
         }
+    }
+
+    fun atualizarPonto(ponto: PontoColeta) {
+        viewModelScope.launch {
+            val resultado = pontoColetaRepository.atualizarPontoColeta(ponto)
+            resultado.onSuccess {
+                _operacaoConcluida.value = true
+                carregarPontosDeColetaDoUsuario()
+            }.onFailure { exception ->
+                _errorMessage.value = "Erro ao atualizar ponto: ${exception.message}"
+            }
+        }
+    }
+
+    fun deletarPonto(ponto: PontoColeta) {
+        viewModelScope.launch {
+            ponto.id?.let { pontoId ->
+                val resultado = pontoColetaRepository.deletarPontoColeta(pontoId)
+                resultado.onSuccess {
+                    _pontoDeletado.value = true
+                    carregarPontosDeColetaDoUsuario() // Atualiza a lista principal
+                }.onFailure { exception ->
+                    _errorMessage.value = "Erro ao deletar ponto: ${exception.message}"
+                }
+            } ?: run {
+                _errorMessage.value = "ID do ponto é nulo, não é possível deletar."
+            }
+        }
+    }
+
+    fun resetarStatusOperacao() {
+        _operacaoConcluida.value = false
+        _errorMessage.value = null
     }
 }
