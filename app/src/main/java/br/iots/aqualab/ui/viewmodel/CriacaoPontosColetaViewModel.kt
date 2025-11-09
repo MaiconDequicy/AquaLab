@@ -27,9 +27,26 @@ class CriacaoPontosColetaViewModel : ViewModel() {
     private val _pontoDeletado = MutableLiveData<Boolean>(false)
     val pontoDeletado: LiveData<Boolean> = _pontoDeletado
 
+    // --- NOVO ---
+    // LiveData para expor a lista de IDs disponíveis da nuvem
+    private val _idsDisponiveisNuvem = MutableLiveData<List<String>>()
+    val idsDisponiveisNuvem: LiveData<List<String>> = _idsDisponiveisNuvem
+
 
     init {
         carregarPontosDeColetaDoUsuario()
+    }
+
+    fun carregarIdsDisponiveis() {
+        viewModelScope.launch {
+            val resultado = pontoColetaRepository.getIdsDisponiveisNuvem()
+
+            resultado.onSuccess { ids ->
+                _idsDisponiveisNuvem.value = ids
+            }.onFailure { exception ->
+                _errorMessage.value = "Erro ao buscar IDs da nuvem: ${exception.message}"
+            }
+        }
     }
 
     private fun carregarPontosDeColetaDoUsuario()
@@ -53,7 +70,7 @@ class CriacaoPontosColetaViewModel : ViewModel() {
         viewModelScope.launch {
             val resultado = pontoColetaRepository.criarPontoColeta(novoPonto)
             resultado.onSuccess {
-                carregarPontosDeColetaDoUsuario()
+                _operacaoConcluida.value = true
             }.onFailure { exception ->
                 _errorMessage.value = "Erro ao criar ponto: ${exception.message}"
             }
@@ -65,7 +82,6 @@ class CriacaoPontosColetaViewModel : ViewModel() {
             val resultado = pontoColetaRepository.atualizarPontoColeta(ponto)
             resultado.onSuccess {
                 _operacaoConcluida.value = true
-                carregarPontosDeColetaDoUsuario()
             }.onFailure { exception ->
                 _errorMessage.value = "Erro ao atualizar ponto: ${exception.message}"
             }
@@ -78,7 +94,7 @@ class CriacaoPontosColetaViewModel : ViewModel() {
                 val resultado = pontoColetaRepository.deletarPontoColeta(pontoId)
                 resultado.onSuccess {
                     _pontoDeletado.value = true
-                    carregarPontosDeColetaDoUsuario() // Atualiza a lista principal
+                    carregarPontosDeColetaDoUsuario()
                 }.onFailure { exception ->
                     _errorMessage.value = "Erro ao deletar ponto: ${exception.message}"
                 }

@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Seu Conteúdo Principal (Toolbar e ScrollView) -->
     <LinearLayout
@@ -140,6 +140,7 @@
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
                         android:padding="16dp">
+
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -148,19 +149,31 @@
                             android:textAppearance="?attr/textAppearanceHeadline6"
                             android:textColor="@color/blue_700" />
 
-                        <TextView
+                        <!-- ▼▼▼ ADIÇÕES AQUI ▼▼▼ -->
+                        <!-- ProgressBar para indicar o carregamento dos dados -->
+                        <ProgressBar
+                            android:id="@+id/progressBarLeituras"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginVertical="16dp"
+                            android:visibility="gone" />
+
+                        <!-- RecyclerView para exibir a lista de leituras -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recyclerViewLeituras"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginBottom="16dp"
-                            android:fontFamily="@font/poppins"
-                            android:text="(Mini gráfico das últimas 24h)"
-                            android:textAppearance="?attr/textAppearanceBody2"
-                            android:textColor="@color/grayyyy" />
+                            android:maxHeight="250dp"
+                            android:nestedScrollingEnabled="false"
+                            tools:listitem="@layout/item_leitura_sensor"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnVerHistorico"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
                             android:backgroundTint="@color/blue"
                             android:fontFamily="@font/poppins_bold"
                             android:text="Ver Histórico Completo"

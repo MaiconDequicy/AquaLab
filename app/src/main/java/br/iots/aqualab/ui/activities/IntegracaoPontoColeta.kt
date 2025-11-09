@@ -4,10 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
+import android.widget.ArrayAdapter
+import android.widget.AutoCompleteTextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.observe
 import br.iots.aqualab.R
 import br.iots.aqualab.databinding.ActivityIntegracaoPontoColetaBinding
 import br.iots.aqualab.model.PontoColeta
@@ -36,9 +37,9 @@ class IntegracaoPontoColeta : AppCompatActivity() {
             finish()
         }
 
-        // A chamada foi movida para depois da verificação do modo
-        // configurarListenerBotaoSalvar()
         observarViewModel()
+        viewModel.carregarIdsDisponiveis()
+
 
         pontoParaEditar = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PONTO_PARA_EDITAR_EXTRA", PontoColeta::class.java)
@@ -53,7 +54,6 @@ class IntegracaoPontoColeta : AppCompatActivity() {
             configurarModoCriacao()
         }
 
-        // Ação do botão é centralizada na função salvarPontoColeta
         binding.botaoCriarPonto.setOnClickListener {
             salvarPontoColeta()
         }
@@ -64,7 +64,6 @@ class IntegracaoPontoColeta : AppCompatActivity() {
         binding.botaoCriarPonto.text = "Cadastrar"
     }
 
-    // 1. Preenche os campos quando em modo de edição
     private fun configurarModoEdicao() {
         binding.textViewArtigosNoticiasTitulo.text = "Editar Ponto de Coleta"
         binding.botaoCriarPonto.text = "Salvar Alterações"
@@ -72,12 +71,11 @@ class IntegracaoPontoColeta : AppCompatActivity() {
         pontoParaEditar?.let { ponto ->
             binding.campoNomePonto.setText(ponto.nome)
             binding.campoTipoPonto.setText(ponto.tipo)
-            binding.campoLocalPonto.setText(ponto.endereco) // Usa endereço, pois localização foi depreciado
+            binding.campoLocalPonto.setText(ponto.endereco)
             binding.campoLocalIDPontoNuvem.setText(ponto.pontoIdNuvem)
         }
     }
 
-    // 2. Função única para salvar, decidindo entre criar ou editar
     private fun salvarPontoColeta() {
         val nome = binding.campoNomePonto.text.toString().trim()
         val tipo = binding.campoTipoPonto.text.toString().trim()
@@ -90,13 +88,11 @@ class IntegracaoPontoColeta : AppCompatActivity() {
         }
 
         if (pontoParaEditar != null) {
-            // --- MODO EDIÇÃO ---
             val pontoAtualizado = pontoParaEditar!!.copy(
                 nome = nome,
                 tipo = tipo,
-                endereco = local, // Salva o novo endereço
+                endereco = local,
                 pontoIdNuvem = idPontoNuvem.ifEmpty { null }
-                // `localizacao` não é mais usado no PontoColeta, então usamos `endereco`
             )
             acaoAtual = Acao.EDITANDO
             viewModel.atualizarPonto(pontoAtualizado)
@@ -122,7 +118,7 @@ class IntegracaoPontoColeta : AppCompatActivity() {
         viewModel.errorMessage.observe(this) { error ->
             error?.let {
                 Toast.makeText(this, "Erro: $it", Toast.LENGTH_LONG).show()
-                acaoAtual = Acao.IDLE // Reseta o estado em caso de erro
+                acaoAtual = Acao.IDLE
             }
         }
 
@@ -141,8 +137,16 @@ class IntegracaoPontoColeta : AppCompatActivity() {
                     }
                     Acao.IDLE -> {}
                 }
-                viewModel.resetarStatusOperacao() // Limpa o estado no ViewModel
-                acaoAtual = Acao.IDLE // Reseta o estado local
+                viewModel.resetarStatusOperacao()
+                acaoAtual = Acao.IDLE
+            }
+        }
+
+        viewModel.idsDisponiveisNuvem.observe(this) { ids ->
+            if (ids != null && ids.isNotEmpty()) {
+                val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, ids)
+
+                (binding.campoLocalIDPontoNuvem as? AutoCompleteTextView)?.setAdapter(adapter)
             }
         }
     }

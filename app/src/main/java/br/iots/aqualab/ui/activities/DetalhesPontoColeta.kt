@@ -4,24 +4,30 @@ import android.app.Activity
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.observe
 import br.iots.aqualab.databinding.ActivityDetalhesPontoColetaBinding
 import br.iots.aqualab.model.PontoColeta
+import br.iots.aqualab.ui.adapter.LeiturasAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
+import br.iots.aqualab.ui.viewmodel.DetalhesPontoColetaViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import java.text.SimpleDateFormat
+import java.util.*
 
 class DetalhesPontoColeta : AppCompatActivity() {
 
     private lateinit var binding: ActivityDetalhesPontoColetaBinding
     private var isSpeedDialOpen = false
     private var pontoColetaAtual: PontoColeta? = null
-    private val viewModel: CriacaoPontosColetaViewModel by viewModels()
 
+    private val operacoesViewModel: CriacaoPontosColetaViewModel by viewModels()
+    private val detalhesViewModel: DetalhesPontoColetaViewModel by viewModels()
+    private lateinit var leiturasAdapter: LeiturasAdapter
 
     private val edicaoPontoResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -34,7 +40,6 @@ class DetalhesPontoColeta : AppCompatActivity() {
                 result.data?.getParcelableExtra<PontoColeta>("PONTO_ATUALIZADO_EXTRA")
             }
             pontoAtualizado?.let {
-                // this.pontoColetaAtual = it -> preencherDados já faz isso
                 preencherDados(it)
                 Toast.makeText(this, "Ponto atualizado!", Toast.LENGTH_SHORT).show()
             }
@@ -47,10 +52,7 @@ class DetalhesPontoColeta : AppCompatActivity() {
         setContentView(binding.root)
 
         configurarFabSpeedDial()
-
-        binding.toolbarDetalhesPonto.setNavigationOnClickListener {
-            finish()
-        }
+        binding.toolbarDetalhesPonto.setNavigationOnClickListener { finish() }
 
         val pontoInicial = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableExtra("PONTO_COLETA_EXTRA", PontoColeta::class.java)
@@ -59,50 +61,71 @@ class DetalhesPontoColeta : AppCompatActivity() {
             intent.getParcelableExtra<PontoColeta>("PONTO_COLETA_EXTRA")
         }
 
-        pontoInicial?.let {
-            preencherDados(it)
+        pontoInicial?.let { ponto ->
+            pontoColetaAtual = ponto
+            preencherDados(ponto)
+            configurarRecyclerView()
+            observarViewModels()
+            detalhesViewModel.carregarLeituras(ponto.pontoIdNuvem)
         }
-
-        observarViewModel()
     }
 
-    private fun observarViewModel() {
-        viewModel.pontoDeletado.observe(this) { deletado ->
+    private fun configurarRecyclerView() {
+        leiturasAdapter = LeiturasAdapter(emptyList())
+        binding.recyclerViewLeituras.adapter = leiturasAdapter
+        binding.recyclerViewLeituras.isNestedScrollingEnabled = false
+    }
+
+    private fun observarViewModels() {
+        operacoesViewModel.pontoDeletado.observe(this) { deletado ->
             if (deletado) {
                 Toast.makeText(this, "Ponto removido com sucesso", Toast.LENGTH_LONG).show()
-
                 val resultadoIntent = Intent().apply {
                     putExtra("PONTO_ID_EXTRA", pontoColetaAtual?.id)
                 }
                 setResult(Activity.RESULT_OK, resultadoIntent)
-                viewModel.resetarStatusOperacao() // Limpa o estado no ViewModel
-                finish() // Fecha a tela de detalhes
+                operacoesViewModel.resetarStatusOperacao()
+                finish()
             }
         }
 
-        viewModel.errorMessage.observe(this) { error ->
+        operacoesViewModel.errorMessage.observe(this) { error ->
             error?.let {
                 Toast.makeText(this, "Falha na operação: $it", Toast.LENGTH_LONG).show()
-                viewModel.resetarStatusOperacao()
+                operacoesViewModel.resetarStatusOperacao()
+            }
+        }
+
+        detalhesViewModel.leituras.observe(this) { leituras ->
+            leiturasAdapter.updateData(leituras)
+        }
+
+        detalhesViewModel.isLoading.observe(this) { isLoading ->
+            binding.progressBarLeituras.visibility = if (isLoading) View.VISIBLE else View.GONE
+        }
+
+        detalhesViewModel.ultimaLeitura.observe(this) { ultimaLeitura ->
+            if (ultimaLeitura != null) {
+                val sensorNome = ultimaLeitura.sensorId?.replaceFirstChar { it.titlecase() } ?: ""
+                val valor = ultimaLeitura.valor ?: "N/A"
+                val dataFormatada = ultimaLeitura.timestamp?.toDate()?.let { date ->
+                    SimpleDateFormat("dd/MM/yy HH:mm", Locale.getDefault()).format(date)
+                } ?: "(não disponível)"
+
+                binding.tvUltimaLeitura.text = "Última Leitura: $valor $sensorNome ($dataFormatada)"
+            } else {
+                binding.tvUltimaLeitura.text = "Última Leitura: (nenhuma leitura encontrada)"
             }
         }
     }
 
-
     private fun configurarFabSpeedDial() {
         binding.fabAcaoSecundaria1.visibility = View.GONE
         binding.fabAcaoSecundaria2.visibility = View.GONE
-
         binding.fabConfigPontoColeta.setOnClickListener {
             isSpeedDialOpen = !isSpeedDialOpen
-
-            if (isSpeedDialOpen) {
-                abrirSpeedDial()
-            } else {
-                fecharSpeedDial()
-            }
+            if (isSpeedDialOpen) abrirSpeedDial() else fecharSpeedDial()
         }
-
         binding.fabAcaoSecundaria1.setOnClickListener {
             pontoColetaAtual?.let { ponto ->
                 val intent = Intent(this, IntegracaoPontoColeta::class.java).apply {
@@ -112,7 +135,6 @@ class DetalhesPontoColeta : AppCompatActivity() {
             }
             fecharSpeedDial()
         }
-
         binding.fabAcaoSecundaria2.setOnClickListener {
             removerPontoDeColeta()
             fecharSpeedDial()
@@ -135,22 +157,12 @@ class DetalhesPontoColeta : AppCompatActivity() {
         fab.visibility = View.VISIBLE
         fab.alpha = 0f
         fab.translationY = fab.height.toFloat()
-        fab.animate()
-            .alpha(1f)
-            .translationY(0f)
-            .setDuration(300)
-            .start()
+        fab.animate().alpha(1f).translationY(0f).setDuration(300).start()
     }
 
     private fun esconderBotaoSpeedDial(fab: FloatingActionButton) {
-        fab.animate()
-            .alpha(0f)
-            .translationY(fab.height.toFloat())
-            .setDuration(300)
-            .withEndAction {
-                fab.visibility = View.GONE
-            }
-            .start()
+        fab.animate().alpha(0f).translationY(fab.height.toFloat()).setDuration(300)
+            .withEndAction { fab.visibility = View.GONE }.start()
     }
 
     private fun preencherDados(ponto: PontoColeta) {
@@ -158,7 +170,7 @@ class DetalhesPontoColeta : AppCompatActivity() {
         binding.textViewNomePonto.text = "Ponto de Coleta: ${ponto.nome}"
         binding.tvClassificacao.text = "Boa"
         binding.tvStatusOperacional.text = "Status Operacional: ${ponto.status}"
-        binding.tvUltimaLeitura.text = "Última Leitura: (não disponível)"
+        binding.tvUltimaLeitura.text = "Última Leitura: (carregando...)"
         binding.tvNomeCadastral.text = "Nome: ${ponto.nome}"
         binding.tvTipoPontoCadastral.text = "Tipo de Ponto: ${ponto.tipo}"
         binding.tvLocalizacaoCadastral.text = "Endereço: ${ponto.endereco}"
@@ -166,7 +178,7 @@ class DetalhesPontoColeta : AppCompatActivity() {
 
     private fun removerPontoDeColeta() {
         pontoColetaAtual?.let { pontoParaRemover ->
-            viewModel.deletarPonto(pontoParaRemover)
+            operacoesViewModel.deletarPonto(pontoParaRemover)
         } ?: run {
             Toast.makeText(this, "Não foi possível identificar o ponto para remoção.", Toast.LENGTH_LONG).show()
         }

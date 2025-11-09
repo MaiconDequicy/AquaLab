@@ -1,6 +1,7 @@
 package br.iots.aqualab.repository
 
 import android.util.Log
+import br.iots.aqualab.model.LeituraSensor
 import br.iots.aqualab.model.PontoColeta
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
@@ -14,6 +15,7 @@ class PontoColetaRepository {
     private val firebaseAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
     private val pontosColetaCollection = firestore.collection("pontosDeColeta")
+    private val leiturasSensoresCollection = firestore.collection("leiturasSensores")
 
     suspend fun criarPontoColeta(novoPonto: PontoColeta): Result<Unit> {
         return withContext(Dispatchers.IO) {
@@ -83,4 +85,44 @@ class PontoColetaRepository {
             }
         }
     }
+
+    suspend fun getIdsDisponiveisNuvem(): Result<List<String>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val snapshot = leiturasSensoresCollection.get().await()
+
+                val idsUnicos = hashSetOf<String>()
+                for (document in snapshot.documents) {
+                    document.getString("pontoId")?.let { id ->
+                        if (id.isNotEmpty()) {
+                            idsUnicos.add(id)
+                        }
+                    }
+                }
+
+                Result.success(idsUnicos.sorted())
+
+            } catch (e: Exception) {
+                Log.e("PontoColetaRepository", "Erro ao buscar IDs da nuvem do Firestore", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun getLeiturasDoPonto(pontoIdNuvem: String): Result<List<LeituraSensor>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val snapshot = firestore.collection("leiturasSensores")
+                    .whereEqualTo("pontoId", pontoIdNuvem)
+                    .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
+                    .limit(50) // Pega as 50 mais recentes
+                    .get()
+                    .await()
+                Result.success(snapshot.toObjects(LeituraSensor::class.java))
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+    }
+
 }

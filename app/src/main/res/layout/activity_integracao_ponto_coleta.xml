@@ -136,7 +136,7 @@
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/textInputLayoutIDPontoNuvem"
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     app:boxStrokeColor="@color/blue"
@@ -148,12 +148,11 @@
                     android:hint="ID do Ponto na Nuvem"
                     app:startIconTint="@color/blue">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <AutoCompleteTextView
                         android:id="@+id/campoLocalIDPontoNuvem"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="text"
-                        android:maxLines="1"
+                        android:inputType="none"
                         android:fontFamily="@font/poppins"
                         android:textColor="@color/blue_700"
                         android:textSize="16sp"
