@@ -29,7 +29,6 @@ class PontoColetaRepository {
     suspend fun getLeiturasRecentes(pontoIdNuvem: String?, limit: Int): List<LeituraSensor> {
         return withContext(Dispatchers.IO) {
             try {
-                // Adicionado um null-check mais seguro
                 if (pontoIdNuvem.isNullOrEmpty()) {
                     throw IllegalArgumentException("pontoIdNuvem não pode ser nulo ou vazio.")
                 }
