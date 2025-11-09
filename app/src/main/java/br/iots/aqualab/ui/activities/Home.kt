@@ -11,7 +11,6 @@ import br.iots.aqualab.ui.fragments.Artigos
 import br.iots.aqualab.ui.fragments.Inicio
 import br.iots.aqualab.ui.fragments.Mapa
 import br.iots.aqualab.ui.fragments.Perfil
-import br.iots.aqualab.ui.fragments.Dashboard
 import br.iots.aqualab.ui.fragments.Admin
 import br.iots.aqualab.ui.fragments.CriacaoPontosColeta
 import br.iots.aqualab.ui.fragments.InicioResearcher

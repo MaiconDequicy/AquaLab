@@ -6,9 +6,16 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import br.iots.aqualab.R
 import br.iots.aqualab.databinding.FragmentInicioResearcherBinding
-import com.github.mikephil.charting.charts.LineChart
+import br.iots.aqualab.model.LeituraSensor
+import br.iots.aqualab.ui.adapter.SensorStatusAdapter
+import br.iots.aqualab.ui.viewmodel.AuthUIState
+import br.iots.aqualab.ui.viewmodel.DashboardUIState
+import br.iots.aqualab.ui.viewmodel.DashboardViewModel
+import br.iots.aqualab.ui.viewmodel.LoginViewModel
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
@@ -18,10 +25,15 @@ class InicioResearcher : Fragment() {
     private var _binding: FragmentInicioResearcherBinding? = null
     private val binding get() = _binding!!
 
+    private val loginViewModel: LoginViewModel by activityViewModels()
+    private val dashboardViewModel: DashboardViewModel by viewModels()
+
+    private lateinit var sensorStatusAdapter: SensorStatusAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentInicioResearcherBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -29,37 +41,121 @@ class InicioResearcher : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        setupLineChart()
+        setupRecyclerView()
+        setupWelcomeMessageObserver()
+        setupDashboardObserver()
+
+        dashboardViewModel.loadDashboardData()
+
+        if (loginViewModel.loginState.value !is AuthUIState.Success) {
+            loginViewModel.checkIfUserIsLoggedIn()
+        }
     }
 
-    private fun setupLineChart() {
+    private fun setupRecyclerView() {
+        sensorStatusAdapter = SensorStatusAdapter(emptyList())
+        binding.recyclerViewSensorStatus.adapter = sensorStatusAdapter
+    }
+
+    private fun setupWelcomeMessageObserver() {
+        loginViewModel.loginState.observe(viewLifecycleOwner) { state ->
+            if (state is AuthUIState.Success) {
+                val userProfile = state.userProfile
+                binding.boasVindas.text = "Olá, ${userProfile.displayName}!"
+            }
+        }
+    }
+
+    /**
+     * Observa o estado do DashboardViewModel para preencher os cards com dados dinâmicos.
+     */
+    private fun setupDashboardObserver() {
+        dashboardViewModel.dashboardState.observe(viewLifecycleOwner) { state ->
+            when (state) {
+                is DashboardUIState.Loading -> {
+                    binding.valorSensorDestaque.text = "Carregando..."
+                }
+                is DashboardUIState.Success -> {
+                    state.ultimaLeitura?.let {
+                        updateFeaturedSensorCard(it)
+                    }
+                    binding.nomeSensorLocal.text = "Sensor de Temp. - ${state.pontoDestaque.nome}"
+                    binding.itemAnaliseSensor.text = "Sensor de Temp. - ${state.pontoDestaque.nome}"
+                    binding.labelStatusSensores.text = "Status dos Sensores - ${state.pontoDestaque.nome}"
+
+                    updateLineChart(state.leiturasRecentes)
+                    updateSensorStatusList(state.leiturasRecentes) // Esta função agora usa o adapter
+                }
+                is DashboardUIState.Error -> {
+                    binding.valorSensorDestaque.text = "Erro ao carregar"
+                }
+                is DashboardUIState.Empty -> {
+                    binding.valorSensorDestaque.text = "Nenhum ponto de coleta"
+                }
+            }
+        }
+    }
+
+    private fun updateFeaturedSensorCard(ultimaLeitura: LeituraSensor) {
+        val leituraTemperatura = if (ultimaLeitura.sensorId == "temperatura") {
+            ultimaLeitura
+        } else {
+            dashboardViewModel.dashboardState.value?.let { state ->
+                if (state is DashboardUIState.Success) {
+                    state.leiturasRecentes.firstOrNull { it.sensorId == "temperatura" }
+                } else null
+            }
+        }
+
+        leituraTemperatura?.let {
+            val valorFormatado = String.format("%.1f °C", it.valor)
+            binding.valorSensorDestaque.text = valorFormatado
+        } ?: run {
+            binding.valorSensorDestaque.text = "Sem dados de Temp."
+        }
+    }
+
+    private fun updateLineChart(leituras: List<LeituraSensor>) {
+        if (leituras.isEmpty()) {
+            binding.lineChart.clear()
+            binding.lineChart.invalidate()
+            return
+        }
+
+        val leiturasTemperatura = leituras.filter { it.sensorId == "temperatura" }.reversed()
 
         val entries = ArrayList<Entry>()
-        entries.add(Entry(0f, 22.5f))
-        entries.add(Entry(1f, 23.1f))
-        entries.add(Entry(2f, 24.0f))
-        entries.add(Entry(3f, 23.8f))
-        entries.add(Entry(4f, 25.1f))
-        entries.add(Entry(5f, 24.5f))
+        leiturasTemperatura.forEachIndexed { index, leitura ->
+            leitura.valor?.let { valor ->
+                entries.add(Entry(index.toFloat(), valor.toFloat()))
+            }
+        }
 
         val dataSet = LineDataSet(entries, "Temperatura (°C)")
-
-        dataSet.color = ContextCompat.getColor(requireContext(), R.color.blue) // Cor da linha
-        dataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.black) // Cor do texto dos valores
-        dataSet.setCircleColor(ContextCompat.getColor(requireContext(), R.color.blue)) // Cor dos pontos
-        dataSet.setDrawCircles(true) // Desenhar os pontos
-        dataSet.lineWidth = 2f // Espessura da linha
-        dataSet.valueTextSize = 10f // Tamanho do texto dos valores
-        dataSet.setDrawValues(true) // Mostrar os valores em cada ponto
+        dataSet.color = ContextCompat.getColor(requireContext(), R.color.blue)
+        dataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.black)
+        dataSet.setCircleColor(ContextCompat.getColor(requireContext(), R.color.blue))
+        dataSet.setDrawCircles(true)
+        dataSet.lineWidth = 2f
+        dataSet.valueTextSize = 10f
+        dataSet.setDrawValues(true)
 
         val lineData = LineData(dataSet)
-
         binding.lineChart.apply {
             data = lineData
             description.isEnabled = false
             legend.isEnabled = true
             invalidate()
         }
+    }
+
+    private fun updateSensorStatusList(leituras: List<LeituraSensor>) {
+        val ultimasLeiturasPorSensor = leituras
+            .groupBy { it.sensorId }
+            .map { it.value.first() }
+            .sortedBy { it.sensorId }
+
+        sensorStatusAdapter.updateData(ultimasLeiturasPorSensor)
     }
 
     override fun onDestroyView() {

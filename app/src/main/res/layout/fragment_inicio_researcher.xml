@@ -170,7 +170,6 @@
                 app:strokeColor="@color/cinza_fraco"
                 app:strokeWidth="1dp">
 
-
                 <LinearLayout
                     android:id="@+id/layoutSensoresDestaques"
                     android:layout_width="match_parent"
@@ -188,78 +187,16 @@
                         android:fontFamily="@font/poppins_bold"
                         android:layout_marginBottom="8dp" />
 
-                    <LinearLayout
-                        android:id="@+id/statusSensor01"
+                     <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewSensorStatus"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="2dp">
+                        android:layout_marginTop="2dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_sensor_status"
+                        android:nestedScrollingEnabled="false"
+                        />
 
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/shape_circle_gray"
-                            app:tint="@color/status_verde"
-                            android:layout_marginEnd="8dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Sensor de PH: 7.2 pH"
-                            android:textAppearance="?attr/textAppearanceBody2"
-                            android:textColor="@color/light_gray"
-                            android:fontFamily="@font/poppins"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/statusSensor2"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="2dp">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/shape_circle_gray"
-                            app:tint="@color/status_verde"
-                            android:layout_marginEnd="8dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Sensor de TDS: 150 ppm"
-                            android:textAppearance="?attr/textAppearanceBody2"
-                            android:textColor="@color/light_gray"
-                            android:fontFamily="@font/poppins"/>
-                    </LinearLayout>
-
-                    <LinearLayout
-                        android:id="@+id/statusSensor3"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:layout_marginTop="2dp">
-
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@drawable/shape_circle_gray"
-                            app:tint="@color/status_vermelho"
-                            android:layout_marginEnd="8dp"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Sensor de Amonia: Offline"
-                            android:textAppearance="?attr/textAppearanceBody2"
-                            android:textColor="@color/light_gray"
-                            android:fontFamily="@font/poppins"/>
-
-                    </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

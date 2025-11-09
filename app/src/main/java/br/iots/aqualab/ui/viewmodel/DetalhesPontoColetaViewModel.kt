@@ -24,7 +24,6 @@ class DetalhesPontoColetaViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-
     fun carregarLeituras(pontoIdNuvem: String?) {
         if (pontoIdNuvem.isNullOrEmpty()) {
             _errorMessage.value = "Não há um ID da nuvem associado a este ponto."
@@ -35,21 +34,19 @@ class DetalhesPontoColetaViewModel : ViewModel() {
 
         viewModelScope.launch {
             _isLoading.value = true
+            try {
+                val listaDeLeituras = repository.getLeiturasRecentes(pontoIdNuvem, limit = 50)
 
-            val resultado = repository.getLeiturasDoPonto(pontoIdNuvem)
-
-            resultado.onSuccess { listaDeLeituras ->
                 _leituras.value = listaDeLeituras
-
                 _ultimaLeitura.value = listaDeLeituras.firstOrNull()
 
-            }.onFailure { exception ->
+            } catch (exception: Exception) {
                 _errorMessage.value = "Erro ao carregar leituras: ${exception.message}"
                 _leituras.value = emptyList()
                 _ultimaLeitura.value = null
+            } finally {
+                _isLoading.value = false
             }
-
-            _isLoading.value = false
         }
     }
 }

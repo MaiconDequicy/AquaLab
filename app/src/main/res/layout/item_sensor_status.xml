@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:paddingVertical="4dp">
+
+    <ImageView
+        android:id="@+id/ivStatusIndicator"
+        android:layout_width="16dp"
+        android:layout_height="16dp"
+        android:src="@drawable/shape_circle_gray"
+        android:layout_marginEnd="8dp"
+        app:tint="@color/status_verde"
+        tools:tint="@color/status_verde" />
+
+    <TextView
+        android:id="@+id/tvSensorStatusInfo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?attr/textAppearanceBody2"
+        android:textColor="@color/light_gray"
+        android:fontFamily="@font/poppins"
+        tools:text="Sensor de PH: 7.2 pH" />
+</LinearLayout>
