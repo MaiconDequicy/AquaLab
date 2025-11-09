@@ -5,6 +5,7 @@ import br.iots.aqualab.model.LeituraSensor
 import br.iots.aqualab.model.PontoColeta
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.tasks.await
@@ -17,13 +18,40 @@ class PontoColetaRepository {
     private val pontosColetaCollection = firestore.collection("pontosDeColeta")
     private val leiturasSensoresCollection = firestore.collection("leiturasSensores")
 
+    suspend fun getPontosColeta(): List<PontoColeta> {
+        val result = getPontosColetaDoUsuario()
+        return result.getOrThrow()
+    }
+
+    /**
+     * Busca as leituras mais recentes de um ponto de coleta específico, com um limite dinâmico
+     */
+    suspend fun getLeiturasRecentes(pontoIdNuvem: String?, limit: Int): List<LeituraSensor> {
+        return withContext(Dispatchers.IO) {
+            try {
+                // Adicionado um null-check mais seguro
+                if (pontoIdNuvem.isNullOrEmpty()) {
+                    throw IllegalArgumentException("pontoIdNuvem não pode ser nulo ou vazio.")
+                }
+                val snapshot = firestore.collection("leiturasSensores")
+                    .whereEqualTo("pontoId", pontoIdNuvem)
+                    .orderBy("timestamp", Query.Direction.DESCENDING)
+                    .limit(limit.toLong())
+                    .get()
+                    .await()
+                snapshot.toObjects(LeituraSensor::class.java)
+            } catch (e: Exception) {
+                Log.e("PontoColetaRepo", "Erro ao buscar leituras recentes", e)
+                throw e
+            }
+        }
+    }
+
     suspend fun criarPontoColeta(novoPonto: PontoColeta): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 val userId = firebaseAuth.currentUser?.uid ?: return@withContext Result.failure(Exception("Usuário não autenticado"))
-
                 val pontoComUserId = novoPonto.copy(userId = userId)
-
                 pontosColetaCollection.add(pontoComUserId).await()
                 Result.success(Unit)
             } catch (e: Exception) {
@@ -32,17 +60,18 @@ class PontoColetaRepository {
         }
     }
 
+
     suspend fun getPontosColetaDoUsuario(): Result<List<PontoColeta>> {
         return withContext(Dispatchers.IO) {
             try {
                 val userId = firebaseAuth.currentUser?.uid ?: return@withContext Result.failure(Exception("Usuário não autenticado"))
-
                 val snapshot = pontosColetaCollection
                     .whereEqualTo("userId", userId)
                     .get()
                     .await()
-
-                val pontos = snapshot.toObjects(PontoColeta::class.java)
+                val pontos = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(PontoColeta::class.java)?.copy(id = doc.id)
+                }
                 Result.success(pontos)
             } catch (e: Exception) {
                 Result.failure(e)
@@ -56,12 +85,9 @@ class PontoColetaRepository {
             if (pontoId.isEmpty()) {
                 return Result.failure(Exception("ID do ponto está vazio, não é possível atualizar."))
             }
-
             val db = FirebaseFirestore.getInstance()
             val documentoRef = db.collection("pontosDeColeta").document(pontoId)
-
             documentoRef.set(ponto, SetOptions.merge()).await()
-
             Result.success(Unit)
         } catch (e: Exception) {
             Log.e("PontoColetaRepository", "Erro ao atualizar ponto de coleta no Firestore", e)
@@ -69,17 +95,16 @@ class PontoColetaRepository {
         }
     }
 
-
     suspend fun deletarPontoColeta(pontoId: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
                 if (pontoId.isEmpty()) {
                     return@withContext Result.failure(Exception("ID do ponto está vazio, não é possível deletar."))
                 }
-
                 pontosColetaCollection.document(pontoId).delete().await()
                 Result.success(Unit)
-            } catch (e: Exception) {
+            } catch (e: Exception)
+            {
                 Log.e("PontoColetaRepository", "Erro ao deletar ponto de coleta no Firestore", e)
                 Result.failure(e)
             }
@@ -90,7 +115,6 @@ class PontoColetaRepository {
         return withContext(Dispatchers.IO) {
             try {
                 val snapshot = leiturasSensoresCollection.get().await()
-
                 val idsUnicos = hashSetOf<String>()
                 for (document in snapshot.documents) {
                     document.getString("pontoId")?.let { id ->
@@ -99,30 +123,11 @@ class PontoColetaRepository {
                         }
                     }
                 }
-
                 Result.success(idsUnicos.sorted())
-
             } catch (e: Exception) {
                 Log.e("PontoColetaRepository", "Erro ao buscar IDs da nuvem do Firestore", e)
                 Result.failure(e)
             }
         }
     }
-
-    suspend fun getLeiturasDoPonto(pontoIdNuvem: String): Result<List<LeituraSensor>> {
-        return withContext(Dispatchers.IO) {
-            try {
-                val snapshot = firestore.collection("leiturasSensores")
-                    .whereEqualTo("pontoId", pontoIdNuvem)
-                    .orderBy("timestamp", com.google.firebase.firestore.Query.Direction.DESCENDING)
-                    .limit(50) // Pega as 50 mais recentes
-                    .get()
-                    .await()
-                Result.success(snapshot.toObjects(LeituraSensor::class.java))
-            } catch (e: Exception) {
-                Result.failure(e)
-            }
-        }
-    }
-
 }
