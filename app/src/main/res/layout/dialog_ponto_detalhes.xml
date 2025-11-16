@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <ProgressBar
+        android:id="@+id/dialog_progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center" />
+
+    <LinearLayout
+        android:id="@+id/dialog_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/dialog_tv_nome_estacao"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Estação - MUSA"
+            android:textAppearance="?attr/textAppearanceHeadline6" />
+
+        <TextView
+            android:id="@+id/dialog_tv_clima"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="Clima: Ensolarado, 31°C, 65% umidade" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="Análise de Qualidade:"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/dialog_tv_analise"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Análise técnica gerada pela IA..." />
+    </LinearLayout>
+
+</LinearLayout>

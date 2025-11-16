@@ -1,15 +1,21 @@
 package br.iots.aqualab.repository
 
+import android.os.Build
 import android.util.Log
+import br.iots.aqualab.BuildConfig
 import br.iots.aqualab.model.LeituraSensor
 import br.iots.aqualab.model.PontoColeta
+import br.iots.aqualab.model.PontoDetalhadoInfo
+import br.iots.aqualab.network.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class PontoColetaRepository {
 
@@ -125,6 +131,65 @@ class PontoColetaRepository {
                 Result.success(idsUnicos.sorted())
             } catch (e: Exception) {
                 Log.e("PontoColetaRepository", "Erro ao buscar IDs da nuvem do Firestore", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun getPontosPublicos(): Result<List<PontoColeta>> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val snapshot = pontosColetaCollection
+                    .whereEqualTo("tipo", "Público")
+                    .get()
+                    .await()
+
+                val pontosPublicos = snapshot.documents.mapNotNull { doc ->
+                    doc.toObject(PontoColeta::class.java)?.copy(id = doc.id)
+                }
+                Result.success(pontosPublicos)
+            } catch (e: Exception) {
+                Log.e("PontoColetaRepo", "Erro ao buscar pontos públicos", e)
+                Result.failure(e)
+            }
+        }
+    }
+
+    suspend fun getDetalhesCompletosDoPonto(ponto: PontoColeta): Result<PontoDetalhadoInfo> {
+        return withContext(Dispatchers.IO) {
+            try {
+                val weatherResponse = RetrofitInstance.weatherApiService.getCurrentWeather(
+                    lat = ponto.latitude,
+                    lon = ponto.longitude,
+                    apiKey = BuildConfig.OPENWEATHER_API_KEY
+                )
+
+                val condicoes = weatherResponse.weather.firstOrNull()?.description?.replaceFirstChar {
+                    if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
+                } ?: "N/A"
+
+                val temperatura = "%.1f°C".format(weatherResponse.main.temp)
+
+                val umidade = "${weatherResponse.main.humidity}%"
+
+                delay(1000)
+
+                val analiseQualidadeSimulada = "A análise indica parâmetros dentro dos padrões CONAMA para a classe 2, considerando o clima atual."
+                val dicaEducativaSimulada = "💡 Sabia que o clima de '${condicoes.lowercase()}' pode influenciar o pH da água?"
+
+                val detalhes = PontoDetalhadoInfo(
+                    nomeEstacao = ponto.nome,
+                    condicoesAtuais = condicoes,
+                    temperatura = temperatura,
+                    umidade = umidade,
+                    linkMaisInfo = null,
+                    analiseQualidade = analiseQualidadeSimulada,
+                    dicaEducativa = dicaEducativaSimulada
+                )
+                Result.success(detalhes)
+
+            } catch (e: Exception) {
+                Log.e("PontoColetaRepo", "Erro ao buscar detalhes completos do ponto: ${e.message}", e)
                 Result.failure(e)
             }
         }

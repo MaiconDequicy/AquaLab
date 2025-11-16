@@ -7,7 +7,7 @@ import kotlinx.parcelize.Parcelize
 @Parcelize
 data class PontoColeta(
     @DocumentId val id: String = "",
-    val userId: String = "",
+    val userId: String? = null,
     val nome: String = "",
     val tipo: String = "",
     val endereco: String = "",
