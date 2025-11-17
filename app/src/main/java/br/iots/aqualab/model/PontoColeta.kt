@@ -1,16 +1,19 @@
 package br.iots.aqualab.model
 
+import android.os.Parcelable
 import com.google.firebase.firestore.DocumentId
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
 data class PontoColeta(
     @DocumentId val id: String = "",
-    val userId: String = "",
+    val userId: String? = null,
     val nome: String = "",
     val tipo: String = "",
     val endereco: String = "",
     val status: String = "",
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
-    val localizacao: String = "", // <-- Valor padrão adicionado
-    val pontoIdNuvem: String? = null // <-- Valor padrão adicionado
-)
+    val localizacao: String = "",
+    val pontoIdNuvem: String? = null
+) : Parcelable

@@ -11,7 +11,10 @@ import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import br.iots.aqualab.R
 import br.iots.aqualab.databinding.FragmentCriacaoPontosColetaBinding
+import br.iots.aqualab.model.PontoColeta
+import br.iots.aqualab.ui.activities.DetalhesPontoColeta
 import br.iots.aqualab.ui.activities.IntegracaoPontoColeta
+import br.iots.aqualab.ui.activities.LancamentoManual
 import br.iots.aqualab.ui.adapter.PontoColetaAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -62,12 +65,14 @@ class CriacaoPontosColeta : Fragment() {
 
         fabAddManual.setOnClickListener {
             Toast.makeText(context, "Adicionar manualmente clicado", Toast.LENGTH_SHORT).show()
+            val intent = Intent(activity, LancamentoManual::class.java)
+            startActivity(intent)
             toggleFabMenu()
         }
 
         fabImportar.setOnClickListener {
             val intent = Intent(activity, IntegracaoPontoColeta::class.java)
-
+            Toast.makeText(context, "Integrar Ponto de Coleta clicado", Toast.LENGTH_SHORT).show()
             startActivity(intent)
         }
     }
@@ -85,7 +90,9 @@ class CriacaoPontosColeta : Fragment() {
     }
 
     private fun configurarRecyclerView() {
-        pontoColetaAdapter = PontoColetaAdapter(emptyList())
+        pontoColetaAdapter = PontoColetaAdapter(emptyList()) { pontoSelecionado ->
+            abrirDetalhesDoPonto(pontoSelecionado)
+        }
 
         binding.recyclerViewPontosColeta.apply {
             layoutManager = LinearLayoutManager(context)
@@ -95,6 +102,7 @@ class CriacaoPontosColeta : Fragment() {
 
     private fun observarViewModel() {
         pontosviewModel.pontosColeta.observe(viewLifecycleOwner) { listaPontos ->
+
             pontoColetaAdapter.atualizarLista(listaPontos)
         }
 
@@ -106,6 +114,13 @@ class CriacaoPontosColeta : Fragment() {
                 Toast.makeText(context, it, Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun abrirDetalhesDoPonto(ponto: PontoColeta) {
+        val intent = Intent(requireActivity(), DetalhesPontoColeta::class.java).apply {
+            putExtra("PONTO_COLETA_EXTRA", ponto)
+        }
+        startActivity(intent)
     }
 
     override fun onDestroyView() {

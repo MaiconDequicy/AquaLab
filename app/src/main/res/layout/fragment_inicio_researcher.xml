@@ -3,11 +3,202 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragments.InicioResearcher">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".ui.fragments.InicioResearcher"
+    android:padding="16dp"
+    >
 
-    <TextView
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:text="Inicio" />
+        android:clipToPadding="false">
 
+        <LinearLayout
+            android:id="@+id/caixaPrincipalDash"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/boasVindas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Olá, Maicon!"
+                android:textAppearance="?attr/textAppearanceHeadline5"
+                android:textColor="@color/blue"
+                android:fontFamily="@font/poppins_bold"
+                android:layout_marginStart="14dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginEnd="14dp"
+                />
+
+            <TextView
+                android:id="@+id/descriçãoPesquisador"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?attr/textAppearanceBody1"
+                android:textColor="@color/light_gray"
+                android:text="Um resumo dos seus sensores hoje"
+                android:fontFamily="@font/poppins"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:layout_marginBottom="16dp"
+                />
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_destaque"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="@color/cinza_fraco"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:padding="16dp"
+                    android:gravity="center_vertical"
+                    >
+                    <ImageView
+                        android:id="@+id/imagemVisaoDescritiva"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:src="@drawable/hot"
+                        android:layout_gravity="start"
+                        />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/labelSensorDestaque"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sensor em Destaque"
+                            android:textAppearance="?attr/textAppearanceSubtitle1"
+                            android:textColor="@color/blue"
+                            android:fontFamily="@font/poppins_bold"
+                            android:layout_gravity="center"
+                            />
+
+                        <TextView
+                            android:id="@+id/nomeSensorLocal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Sensor de Temp. - Lago INPA"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="@color/light_gray"
+                            android:fontFamily="@font/poppins_bold"
+                            android:layout_gravity="center"
+                            />
+
+                        <TextView
+                            android:id="@+id/valorSensorDestaque"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="25.1 °C"
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="@color/black"
+                            android:fontFamily="@font/poppins_bold"
+                            android:layout_gravity="center"
+                            />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_analiseGrafica"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="@color/cinza_fraco"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:id="@+id/layoutInternoDash"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/labelAnalise"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Análise de Dados"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        android:textColor="@color/blue"
+                        android:fontFamily="@font/poppins_bold"
+                        android:layout_marginBottom="8dp" />
+
+                    <TextView
+                        android:id="@+id/itemAnaliseSensor"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Sensor de Temp. - Lago INPA"
+                        android:textAppearance="?attr/textAppearanceBody2"
+                        android:textColor="@color/light_gray"
+                        android:fontFamily="@font/poppins"
+                        android:layout_marginBottom="4dp" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/lineChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="200dp"
+                        android:layout_marginTop="8dp"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/card_sensoresPontoDestaque"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="14dp"
+                android:layout_marginEnd="14dp"
+                android:layout_marginBottom="16dp"
+                app:cardCornerRadius="20dp"
+                app:strokeColor="@color/cinza_fraco"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:id="@+id/layoutSensoresDestaques"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:id="@+id/labelStatusSensores"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Status dos Sensores - INPA"
+                        android:textAppearance="?attr/textAppearanceSubtitle1"
+                        android:textColor="@color/blue"
+                        android:fontFamily="@font/poppins_bold"
+                        android:layout_marginBottom="8dp" />
+
+                     <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/recyclerViewSensorStatus"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                        tools:listitem="@layout/item_sensor_status"
+                        android:nestedScrollingEnabled="false"
+                        />
+
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 </FrameLayout>

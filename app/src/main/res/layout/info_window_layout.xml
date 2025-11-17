@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:background="@drawable/info_window_bd"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tv_info_titulo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Detalhes do Ponto"
+        android:textStyle="bold"
+        android:textColor="@color/blue_700" />
+
+    <TextView
+        android:id="@+id/tv_info_nome_ponto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Ponto de Coleta: Nome do Ponto" />
+
+    <TextView
+        android:id="@+id/tv_info_qualidade"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Qualidade: Carregando..." />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:text="Toque para ver detalhes"
+        android:textColor="@color/light_gray"
+        android:textSize="12sp" />
+
+</LinearLayout>
