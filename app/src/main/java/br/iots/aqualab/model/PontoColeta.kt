@@ -15,5 +15,6 @@ data class PontoColeta(
     val latitude: Double = 0.0,
     val longitude: Double = 0.0,
     val localizacao: String = "",
-    val pontoIdNuvem: String? = null
+    val pontoIdNuvem: String? = null,
+    val classificacao: String = "Indisponível"
 ) : Parcelable

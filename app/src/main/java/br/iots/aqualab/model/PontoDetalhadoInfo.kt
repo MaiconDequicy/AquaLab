@@ -5,7 +5,6 @@ data class PontoDetalhadoInfo(
     val condicoesAtuais: String,
     val temperatura: String,
     val umidade: String,
-    val linkMaisInfo: String?,
     val analiseQualidade: String,
     val dicaEducativa: String
 )

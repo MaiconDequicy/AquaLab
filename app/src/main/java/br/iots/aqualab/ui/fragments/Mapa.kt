@@ -19,6 +19,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.Marker
 import com.google.android.gms.maps.model.MarkerOptions
@@ -86,13 +87,23 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
         gMap?.clear()
         pontos.forEach { ponto ->
             val position = LatLng(ponto.latitude, ponto.longitude)
-            gMap?.addMarker(MarkerOptions().position(position))?.also { marker ->
+
+            val corDoMarcador = when (ponto.classificacao) {
+                "Ótima" -> BitmapDescriptorFactory.HUE_BLUE
+                "Boa" -> BitmapDescriptorFactory.HUE_GREEN
+                "Regular" -> BitmapDescriptorFactory.HUE_YELLOW
+                "Ruim" -> BitmapDescriptorFactory.HUE_ORANGE
+                "Péssima" -> BitmapDescriptorFactory.HUE_RED
+                else -> BitmapDescriptorFactory.HUE_VIOLET // Cor para "Indisponível"
+            }
+
+            gMap?.addMarker(
+                MarkerOptions()
+                    .position(position)
+                    .icon(BitmapDescriptorFactory.defaultMarker(corDoMarcador)) // Aplica a cor
+            )?.also { marker ->
                 marker.tag = ponto
             }
-        }
-        pontos.firstOrNull()?.let {
-            val initialPosition = LatLng(it.latitude, it.longitude)
-            gMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(initialPosition, 12f))
         }
     }
 
@@ -109,7 +120,7 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
 
         ponto?.let {
             nomePonto.text = "Ponto de Coleta: ${it.nome}"
-            qualidade.text = "Status: ${it.status}"
+            qualidade.text = "Qualidade: ${it.classificacao}"
         }
         return view
     }

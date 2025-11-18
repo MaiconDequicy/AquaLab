@@ -40,7 +40,7 @@ class DashboardViewModel : ViewModel() {
 
                 val pontoDestaque = pontosColeta.first()
 
-                val leituras = repository.getLeiturasRecentes(pontoDestaque.pontoIdNuvem, limit = 10)
+                val leituras = repository.getLeiturasRecentes(pontoDestaque.pontoIdNuvem, limit = 30)
                 val ultimaLeitura = leituras.firstOrNull()
 
                 _dashboardState.postValue(DashboardUIState.Success(pontoDestaque, leituras, ultimaLeitura))
