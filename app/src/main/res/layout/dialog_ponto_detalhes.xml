@@ -23,6 +23,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Estação - MUSA"
+            android:textColor="@color/blue_700"
             android:textAppearance="?attr/textAppearanceHeadline6" />
 
         <TextView
@@ -30,6 +31,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:fontFamily="@font/poppins"
             android:text="Clima: Ensolarado, 31°C, 65% umidade" />
 
         <TextView
@@ -37,12 +39,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="Análise de Qualidade:"
+            android:textColor="@color/black"
+            android:fontFamily="@font/poppins"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/dialog_tv_analise"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
             android:text="Análise técnica gerada pela IA..." />
     </LinearLayout>
 
