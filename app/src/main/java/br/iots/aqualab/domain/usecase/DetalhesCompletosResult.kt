@@ -57,8 +57,8 @@ class GetDetalhesCompletosDoPontoUseCase(
 
             val respostaCompleta = analiseQualidadeRepository.obterAnalise(promptDoUsuario).getOrThrow()
 
-            val classificacao = respostaCompleta.substringAfter("[CLASSIFICACAO]", "Indisponível").substringBefore("[ANALISE]").trim()
-            val analise = respostaCompleta.substringAfter("[ANALISE]", "Análise não disponível.").substringBefore("[DICA]").trim()
+            val classificacao = respostaCompleta.substringAfter("[CLASSIFICACAO]", "Indisponível").substringBefore("[ANALISE]").replace(Regex("^\\s*\\d+\\.\\s*"), "").trim()
+            val analise = respostaCompleta.substringAfter("[ANALISE]", "Análise não disponível.").substringBefore("[DICA]").replace(Regex("^\\s*\\d+\\.\\s*"), "").trim()
             val dica = respostaCompleta.substringAfter("[DICA]", "Dica não disponível.").trim()
 
             pontoColetaRepository.atualizarClassificacao(ponto.id, classificacao)
