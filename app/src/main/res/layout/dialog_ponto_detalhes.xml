@@ -1,49 +1,139 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="16dp"
+    android:background="@drawable/dialog_rounded_bg"
+    >
 
+    <!-- Indicador de progresso que aparece durante o carregamento -->
     <ProgressBar
         android:id="@+id/dialog_progressBar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
+        android:layout_gravity="center"
+        android:indeterminateTint="?attr/colorPrimary"
+        android:visibility="visible" />
 
+    <!-- Conteúdo principal que fica visível após o carregamento -->
     <LinearLayout
         android:id="@+id/dialog_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="gone">
+        android:visibility="gone"
+        tools:visibility="visible">
 
+        <!-- Cabeçalho com o nome da estação -->
         <TextView
             android:id="@+id/dialog_tv_nome_estacao"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Estação - MUSA"
-            android:textAppearance="?attr/textAppearanceHeadline6" />
+            android:layout_gravity="center_horizontal"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:textColor="?attr/colorPrimary"
+            android:fontFamily="@font/poppins"
+            tools:text="Estação de Coleta MUSA" />
 
         <TextView
             android:id="@+id/dialog_tv_clima"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="Clima: Ensolarado, 31°C, 65% umidade" />
+            android:layout_marginTop="16dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textAppearance="?attr/textAppearanceBody1"
+            app:drawableStartCompat="@drawable/wb_sunny_24"
+            android:fontFamily="@font/poppins"
+            app:drawableTint="@color/status_amarelo"
+            tools:text="Ensolarado, 31°C, 65% umidade" />
 
-        <TextView
+        <!-- Separador -->
+        <com.google.android.material.divider.MaterialDivider
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:text="Análise de Qualidade:"
-            android:textStyle="bold" />
+            android:layout_marginBottom="16dp" />
 
-        <TextView
-            android:id="@+id/dialog_tv_analise"
+        <!-- Card da análise -->
+        <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Análise técnica gerada pela IA..." />
-    </LinearLayout>
+            app:cardCornerRadius="8dp"
+            app:strokeColor="@color/cinza_fraco"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/colorSurface">
 
-</LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Análise de Qualidade"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    android:textColor="?attr/colorPrimary"
+                    android:fontFamily="@font/poppins"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/dialog_tv_analise"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="@font/poppins"
+                    android:lineSpacingMultiplier="1.2"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    tools:text="A análise indica que a qualidade da água está boa. Os níveis de pH e turbidez estão dentro dos limites aceitáveis." />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Card da Dica Educativa -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            app:cardCornerRadius="8dp"
+            app:strokeColor="?attr/colorPrimary"
+            app:strokeWidth="1dp"
+            app:cardBackgroundColor="?attr/colorSurface">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:drawablePadding="8dp"
+                    android:gravity="center_vertical"
+                    android:text="Dica do Dia"
+                    android:fontFamily="@font/poppins"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    android:textColor="?attr/colorPrimary"
+                    android:textStyle="bold"
+                    app:drawableStartCompat="@drawable/lightbulb_24dp"
+                    app:drawableTint="?attr/colorPrimary" />
+
+                <TextView
+                    android:id="@+id/dialog_tv_dica"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingMultiplier="1.2"
+                    android:fontFamily="@font/poppins"
+                    android:textAppearance="?attr/textAppearanceBody2"
+                    tools:text="Evite o descarte de lixo próximo a rios e igarapés." />
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</FrameLayout>

@@ -2,23 +2,15 @@ package br.iots.aqualab.repository
 
 
 import android.util.Log
-import br.iots.aqualab.BuildConfig
-
-import br.iots.aqualab.model.ChatGptRequest
-import br.iots.aqualab.model.ChatMessage
 import br.iots.aqualab.model.LeituraSensor
 import br.iots.aqualab.model.PontoColeta
-import br.iots.aqualab.model.PontoDetalhadoInfo
-import br.iots.aqualab.network.RetrofitInstance
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.Query
 import com.google.firebase.firestore.SetOptions
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.tasks.await
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class PontoColetaRepository {
 
@@ -94,7 +86,6 @@ class PontoColetaRepository {
     suspend fun atualizarPontoColeta(ponto: PontoColeta): Result<Unit> {
         return try {
             val pontoId = ponto.id
-                ?: return Result.failure(Exception("ID do ponto é nulo, não é possível atualizar."))
             if (pontoId.isEmpty()) {
                 return Result.failure(Exception("ID do ponto está vazio, não é possível atualizar."))
             }
@@ -162,82 +153,19 @@ class PontoColetaRepository {
         }
     }
 
-    suspend fun getDetalhesCompletosDoPonto(ponto: PontoColeta): Result<PontoDetalhadoInfo> {
+
+    suspend fun atualizarClassificacao(pontoId: String, novaClassificacao: String): Result<Unit> {
         return withContext(Dispatchers.IO) {
             try {
-                val weatherResponse = RetrofitInstance.weatherApiService.getCurrentWeather(
-                    lat = ponto.latitude,
-                    lon = ponto.longitude,
-                    apiKey = BuildConfig.OPENWEATHER_API_KEY
-                )
-                val condicoes =
-                    weatherResponse.weather.firstOrNull()?.description?.replaceFirstChar {
-                        if (it.isLowerCase()) it.titlecase(Locale.getDefault()) else it.toString()
-                    } ?: "N/A"
-                val temperatura = "%.1f°C".format(weatherResponse.main.temp)
-                val umidade = "${weatherResponse.main.humidity}%"
-
-                var ultimaLeituraPH: Double? = null
-                var ultimaLeituraTempAgua: Double? = null
-                if (!ponto.pontoIdNuvem.isNullOrEmpty()) {
-                    val leituras = getLeiturasRecentes(ponto.pontoIdNuvem, limit = 10)
-                    ultimaLeituraPH = leituras.firstOrNull { it.sensorId == "PH" }?.valor
-                    ultimaLeituraTempAgua =
-                        leituras.firstOrNull { it.sensorId == "TEMPERATURA_AGUA" }?.valor
+                if (pontoId.isEmpty() || novaClassificacao.isEmpty() || novaClassificacao == "Indisponível") {
+                    return@withContext Result.success(Unit)
                 }
-
-                val promptDoUsuario = """
-                Faça uma análise de qualidade da água para este local: '${ponto.nome}'.
-                Condições climáticas atuais: ${condicoes}, temperatura ambiente de ${temperatura}, umidade de ${umidade}.
-                Últimas leituras dos sensores na água:
-                - pH: ${ultimaLeituraPH ?: "não medido"}
-                - Temperatura da Água: ${ultimaLeituraTempAgua ?: "não medida"} °C
-
-                Sua resposta deve ter duas partes, marcadas exatamente assim:
-                1. Comece com [ANALISE] e forneça uma análise técnica concisa (máximo 400 caracteres) sobre a qualidade da água, considerando os padrões de potabilidade e balneabilidade (CONAMA 357/2005).
-                2. Comece com [DICA] e forneça uma explicação didática e curta (máximo 300 caracteres) para um público jovem sobre o que esses dados significam para o meio ambiente local.
-            """.trimIndent()
-
-                val chatRequest = ChatGptRequest(
-                    model = "gpt-3.5-turbo",
-                    messages = listOf(
-                        ChatMessage(
-                            "system",
-                            "Você é um assistente especializado em monitoramento ambiental e educação, focado em dados de qualidade da água na Amazônia. Suas respostas devem ser claras e diretas."
-                        ),
-                        ChatMessage("user", promptDoUsuario)
-                    )
-                )
-
-                val chatResponse = RetrofitInstance.chatGptApiService.getChatCompletion(
-                    apiKey = "Bearer ${BuildConfig.OPENAI_API_KEY}",
-                    request = chatRequest
-                )
-
-                val respostaCompleta = chatResponse.choices.firstOrNull()?.message?.content
-                    ?: "Não foi possível obter a análise."
-                val analise =
-                    respostaCompleta.substringAfter("[ANALISE]", "Análise não disponível.")
-                        .substringBefore("[DICA]").trim()
-                val dica = respostaCompleta.substringAfter("[DICA]", "Dica não disponível.").trim()
-
-                val detalhes = PontoDetalhadoInfo(
-                    nomeEstacao = ponto.nome,
-                    condicoesAtuais = condicoes,
-                    temperatura = temperatura,
-                    umidade = umidade,
-                    linkMaisInfo = null,
-                    analiseQualidade = analise,
-                    dicaEducativa = dica
-                )
-                Result.success(detalhes)
-
+                pontosColetaCollection.document(pontoId)
+                    .update("classificacao", novaClassificacao)
+                    .await()
+                Result.success(Unit)
             } catch (e: Exception) {
-                Log.e(
-                    "PontoColetaRepo",
-                    "Erro ao buscar detalhes completos do ponto: ${e.message}",
-                    e
-                )
+                Log.e("PontoColetaRepo", "Erro ao atualizar classificação", e)
                 Result.failure(e)
             }
         }

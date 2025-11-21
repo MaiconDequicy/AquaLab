@@ -84,7 +84,7 @@ class InicioResearcher : Fragment() {
                     binding.labelStatusSensores.text = "Status dos Sensores - ${state.pontoDestaque.nome}"
 
                     updateLineChart(state.leiturasRecentes)
-                    updateSensorStatusList(state.leiturasRecentes) // Esta função agora usa o adapter
+                    updateSensorStatusList(state.leiturasRecentes)
                 }
                 is DashboardUIState.Error -> {
                     binding.valorSensorDestaque.text = "Erro ao carregar"
@@ -115,6 +115,9 @@ class InicioResearcher : Fragment() {
         }
     }
 
+    /**
+     * GRÁFICO APRIMORADO
+     */
     private fun updateLineChart(leituras: List<LeituraSensor>) {
         if (leituras.isEmpty()) {
             binding.lineChart.clear()
@@ -122,7 +125,9 @@ class InicioResearcher : Fragment() {
             return
         }
 
-        val leiturasTemperatura = leituras.filter { it.sensorId == "temperatura" }.reversed()
+        val leiturasTemperatura = leituras
+            .filter { it.sensorId == "temperatura" }
+            .reversed()
 
         val entries = ArrayList<Entry>()
         leiturasTemperatura.forEachIndexed { index, leitura ->
@@ -131,20 +136,50 @@ class InicioResearcher : Fragment() {
             }
         }
 
-        val dataSet = LineDataSet(entries, "Temperatura (°C)")
-        dataSet.color = ContextCompat.getColor(requireContext(), R.color.blue)
-        dataSet.valueTextColor = ContextCompat.getColor(requireContext(), R.color.black)
-        dataSet.setCircleColor(ContextCompat.getColor(requireContext(), R.color.blue))
-        dataSet.setDrawCircles(true)
-        dataSet.lineWidth = 2f
-        dataSet.valueTextSize = 10f
-        dataSet.setDrawValues(true)
+        val dataSet = LineDataSet(entries, "Temperatura (°C)").apply {
+            color = ContextCompat.getColor(requireContext(), R.color.blue)
+            valueTextColor = ContextCompat.getColor(requireContext(), R.color.black)
+
+            lineWidth = 2.5f
+            valueTextSize = 9f
+            setDrawCircles(true)
+            setCircleColor(ContextCompat.getColor(requireContext(), R.color.blue))
+            circleHoleColor = ContextCompat.getColor(requireContext(), R.color.blue)
+            circleRadius = 4f
+            mode = LineDataSet.Mode.CUBIC_BEZIER
+            setDrawValues(false)
+        }
 
         val lineData = LineData(dataSet)
+
         binding.lineChart.apply {
             data = lineData
+
+            // Remove descrição padrão
             description.isEnabled = false
+
+            // animação
+            animateXY(700, 700)
+
+            // Eixos
+            axisRight.isEnabled = false
+
+            xAxis.apply {
+                setDrawGridLines(false)
+                granularity = 1f
+                position = com.github.mikephil.charting.components.XAxis.XAxisPosition.BOTTOM
+                textSize = 10f
+            }
+
+            axisLeft.apply {
+                setDrawGridLines(true)
+                gridLineWidth = 0.3f
+                textSize = 10f
+            }
+
             legend.isEnabled = true
+            legend.textSize = 12f
+
             invalidate()
         }
     }
