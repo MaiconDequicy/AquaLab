@@ -21,19 +21,27 @@ class SensorStatusAdapter(private var leituras: List<LeituraSensor>) : RecyclerV
         val leitura = leituras[position]
         val context = holder.itemView.context
 
+        // Formatação de valores para 1 casa decimal
+        val valorFormatado = leitura.valor?.let { String.format("%.1f", it) } ?: "--"
+
         val sensorInfoText = when (leitura.sensorId) {
-            "ph" -> "Sensor de PH: ${leitura.valor} pH"
-            "tds" -> "Sensor de TDS: ${leitura.valor} ppm"
-            "amonia" -> "Sensor de Amonia: ${leitura.valor} mg/L"
-            "temperatura" -> "Sensor de Temp.: ${String.format("%.1f", leitura.valor)} °C"
-            else -> "Sensor ${leitura.sensorId?.capitalize()}: ${leitura.valor}"
+            "ph" -> "Sensor de PH: $valorFormatado pH"
+            "tds" -> "Sensor de TDS: $valorFormatado ppm"
+            "amonia" -> "Sensor de Amonia: $valorFormatado mg/L"
+            "temperatura" -> "Sensor de Temp.: $valorFormatado °C"
+            else -> "Sensor ${leitura.sensorId?.replaceFirstChar { it.uppercase() }}: $valorFormatado"
         }
         holder.binding.tvSensorStatusInfo.text = sensorInfoText
 
         val statusColorRes = when (leitura.sensorId) {
-            "ph" -> if (leitura.valor!! in 6.5..8.5) R.color.status_verde else R.color.status_vermelho
-         else -> R.color.status_verde
+            "ph" -> if (leitura.valor != null && leitura.valor in 6.5..8.5) {
+                R.color.status_verde
+            } else {
+                R.color.status_vermelho
+            }
+            else -> R.color.status_verde
         }
+
         val statusColor = ContextCompat.getColor(context, statusColorRes)
         holder.binding.ivStatusIndicator.setColorFilter(statusColor)
     }

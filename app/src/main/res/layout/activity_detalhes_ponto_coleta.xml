@@ -32,7 +32,6 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
-                <!-- Todo o seu conteúdo de TextViews e MaterialCardViews permanece aqui... -->
                 <TextView
                     android:id="@+id/textViewDetalhesPonto"
                     android:layout_width="match_parent"
@@ -232,6 +231,38 @@
                             android:text="Localização: -3.107, -60.025"
                             android:textAppearance="?attr/textAppearanceBody1"
                             android:textColor="@color/grayyyy" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/cinza_fraco"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/poppins_bold"
+                            android:text="Gráfico de Sensores"
+                            android:textAppearance="?attr/textAppearanceHeadline6"
+                            android:textColor="@color/blue_700" />
+
+                        <com.github.mikephil.charting.charts.LineChart
+                            android:id="@+id/chartHistorico"
+                            android:layout_width="match_parent"
+                            android:layout_height="250dp"
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="12dp" />
+
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

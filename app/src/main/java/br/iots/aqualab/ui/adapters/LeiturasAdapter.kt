@@ -28,9 +28,17 @@ class LeiturasAdapter(
     override fun onBindViewHolder(holder: LeituraViewHolder, position: Int) {
         val leitura = leituras[position]
 
-        val sensorNome = leitura.sensorId?.replaceFirstChar { it.titlecase(Locale.getDefault()) } ?: "N/A"
-        holder.tvSensorValor.text = "$sensorNome: ${leitura.valor ?: "N/A"}"
+        val sensorNome =
+            leitura.sensorId?.replaceFirstChar { it.titlecase(Locale.getDefault()) } ?: "N/A"
 
+        // ---- FORMATA O VALOR COM 2 CASAS DECIMAIS ----
+        val valorFormatado = leitura.valor?.let {
+            String.format(Locale.getDefault(), "%.2f", it)
+        } ?: "N/A"
+
+        holder.tvSensorValor.text = "$sensorNome: $valorFormatado"
+
+        // Formatando data do timestamp
         leitura.timestamp?.toDate()?.let { date ->
             val format = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
             holder.tvTimestamp.text = format.format(date)
