@@ -22,60 +22,121 @@ class GetDetalhesCompletosDoPontoUseCase(
     private val weatherRepository: WeatherRepository,
     private val analiseQualidadeRepository: AnaliseQualidadeRepository
 ) {
-    suspend operator fun invoke(ponto: PontoColeta): Result<DetalhesCompletosResult> = withContext(Dispatchers.IO) {
-        try {
-            val (weatherResponse, leituras) = coroutineScope {
-                val weatherDeferred = async { weatherRepository.getCurrentWeather(ponto.latitude, ponto.longitude) }
-                val leiturasDeferred = async {
-                    if (!ponto.pontoIdNuvem.isNullOrEmpty()) {
-                        pontoColetaRepository.getLeiturasRecentes(ponto.pontoIdNuvem, limit = 10)
-                    } else {
-                        emptyList()
+
+    suspend operator fun invoke(ponto: PontoColeta): Result<DetalhesCompletosResult> =
+        withContext(Dispatchers.IO) {
+            try {
+
+                val (weatherResponse, leituras) = coroutineScope {
+                    val weatherDeferred = async {
+                        weatherRepository.getCurrentWeather(
+                            ponto.latitude,
+                            ponto.longitude
+                        )
                     }
+
+                    val leiturasDeferred = async {
+                        if (!ponto.pontoIdNuvem.isNullOrEmpty()) {
+                            pontoColetaRepository.getLeiturasRecentes(
+                                ponto.pontoIdNuvem,
+                                limit = 10
+                            )
+                        } else emptyList()
+                    }
+
+                    Pair(
+                        weatherDeferred.await().getOrThrow(),
+                        leiturasDeferred.await()
+                    )
                 }
-                Pair(weatherDeferred.await().getOrThrow(), leiturasDeferred.await())
-            }
 
-            val condicoes = weatherResponse.weather.firstOrNull()?.description?.replaceFirstChar { it.titlecase(Locale.getDefault()) } ?: "N/A"
-            val temperatura = "%.1f°C".format(weatherResponse.main.temp)
-            val umidade = "${weatherResponse.main.humidity}%"
-            val ultimaLeituraPH = leituras.firstOrNull { it.sensorId == "ph" }?.valor
-            val ultimaLeituraTempAgua = leituras.firstOrNull { it.sensorId == "temperatura" }?.valor
+                val condicoes = weatherResponse.weather.firstOrNull()
+                    ?.description
+                    ?.replaceFirstChar { it.titlecase(Locale.getDefault()) }
+                    ?: "N/A"
 
-            val promptDoUsuario = """
-                Faça uma análise de qualidade da água para este local: '${ponto.nome}'.
-                Condições climáticas atuais: $condicoes, temperatura ambiente de $temperatura, umidade de $umidade.
-                Últimas leituras dos sensores na água:
-                - pH: ${ultimaLeituraPH?.toString() ?: "não medido"}
-                - Temperatura da Água: ${ultimaLeituraTempAgua?.let { "%.1f°C".format(it) } ?: "não medida"}
+                val temperatura = "%.1f°C".format(weatherResponse.main.temp)
+                val umidade = "${weatherResponse.main.humidity}%"
 
-                Sua resposta deve ter TRÊS partes, marcadas exatamente assim:
-                1. Comece com [CLASSIFICACAO] e forneça UMA ÚNICA palavra: Ótima, Boa, Regular, Ruim ou Péssima.
-                2. Comece com [ANALISE] e forneça uma análise técnica concisa (máximo 400 caracteres) sobre a qualidade da água com base nos dados.
-                3. Comece com [DICA] e forneça uma explicação didática e curta (máximo 300 caracteres) para um público jovem.
+                val ultimaLeituraPH =
+                    leituras.firstOrNull { it.sensorId == "ph" }?.valor
+
+                val ultimaLeituraTempAgua =
+                    leituras.firstOrNull { it.sensorId == "temperatura" }?.valor
+
+                val promptDoUsuario = """
+                    Faça uma análise de qualidade da água para este local: '${ponto.nome}'.
+                    Condições climáticas atuais: $condicoes, temperatura ambiente de $temperatura, umidade de $umidade.
+                    Últimas leituras dos sensores na água:
+                    - pH: ${ultimaLeituraPH?.toString() ?: "não medido"}
+                    - Temperatura da Água: ${ultimaLeituraTempAgua?.let { "%.1f°C".format(it) } ?: "não medida"}
+
+                    Sua resposta deve ter TRÊS partes, marcadas exatamente assim:
+                    1. Comece com [CLASSIFICACAO] e forneça UMA ÚNICA palavra: Ótima, Boa, Regular, Ruim ou Péssima.
+                    2. Comece com [ANALISE] e forneça uma análise técnica concisa (máximo 400 caracteres) sobre a qualidade da água com base nos dados.
+                    3. Comece com [DICA] e forneça uma explicação didática e curta (máximo 300 caracteres) para um público jovem.
                 """.trimIndent()
 
-            val respostaCompleta = analiseQualidadeRepository.obterAnalise(promptDoUsuario).getOrThrow()
+                val respostaCompleta =
+                    analiseQualidadeRepository.obterAnalise(promptDoUsuario).getOrThrow()
 
-            val classificacao = respostaCompleta.substringAfter("[CLASSIFICACAO]", "Indisponível").substringBefore("[ANALISE]").replace(Regex("^\\s*\\d+\\.\\s*"), "").trim()
-            val analise = respostaCompleta.substringAfter("[ANALISE]", "Análise não disponível.").substringBefore("[DICA]").replace(Regex("^\\s*\\d+\\.\\s*"), "").trim()
-            val dica = respostaCompleta.substringAfter("[DICA]", "Dica não disponível.").trim()
+                // CLASSIFICAÇÃO
+                val classificacao = Regex("\\[CLASSIFICACAO\\]\\s*([A-Za-zÀ-ú]+)")
+                    .find(respostaCompleta)
+                    ?.groupValues?.get(1)
+                    ?: "Indisponível"
 
-            pontoColetaRepository.atualizarClassificacao(ponto.id, classificacao)
+                // ANALISE
+                val analise = Regex("\\[ANALISE\\]([\\s\\S]*?)(?=\\[DICA\\]|$)")
+                    .find(respostaCompleta)
+                    ?.groupValues?.get(1)
+                    ?.trim()
+                    ?: "Análise não disponível."
 
-            val detalhes = PontoDetalhadoInfo(
-                nomeEstacao = ponto.nome,
-                condicoesAtuais = condicoes,
-                temperatura = temperatura,
-                umidade = umidade,
-                analiseQualidade = analise,
-                dicaEducativa = dica
-            )
-            Result.success(DetalhesCompletosResult(info = detalhes, classificacao = classificacao))
+                // DICA
+                val dica = Regex("\\[DICA\\]([\\s\\S]*)$")
+                    .find(respostaCompleta)
+                    ?.groupValues?.get(1)
+                    ?.trim()
+                    ?: "Dica não disponível."
 
-        } catch (e: Exception) {
-            Log.e("GetDetalhesUseCase", "Erro ao obter detalhes: ${e.message}", e)
-            Result.failure(e)
+
+                Log.d("GetDetalhesUseCase", "-----------------------------------------")
+                Log.d("GetDetalhesUseCase", "RESPOSTA COMPLETA DA IA: $respostaCompleta")
+                Log.d("GetDetalhesUseCase", "CLASSIFICAÇÃO EXTRAÍDA: $classificacao")
+                Log.d("GetDetalhesUseCase", "ANÁLISE EXTRAÍDA: $analise")
+                Log.d("GetDetalhesUseCase", "DICA EXTRAÍDA: $dica")
+                Log.d("GetDetalhesUseCase", "-----------------------------------------")
+                // --- FIM DA MODIFICAÇÃO ---
+
+
+                pontoColetaRepository.atualizarClassificacao(
+                    ponto.id,
+                    classificacao
+                )
+                val detalhes = PontoDetalhadoInfo(
+                    nomeEstacao = ponto.nome,
+                    condicoesAtuais = condicoes,
+                    temperatura = temperatura,
+                    umidade = umidade,
+                    analiseQualidade = analise,
+                    dicaEducativa = dica
+                )
+
+                Result.success(
+                    DetalhesCompletosResult(
+                        info = detalhes,
+                        classificacao = classificacao
+                    )
+                )
+
+            } catch (e: Exception) {
+                Log.e(
+                    "GetDetalhesUseCase",
+                    "Erro ao obter detalhes: ${e.message}",
+                    e
+                )
+                Result.failure(e)
+            }
         }
-    }
 }
