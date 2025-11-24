@@ -4,5 +4,6 @@ data class Artigo(
     val id: String,
     val titulo: String,
     val resumo: String,
-    val urlImagem: String? = null
+    val urlImagem: String? = null,
+    val urlOrigem: String
 )
