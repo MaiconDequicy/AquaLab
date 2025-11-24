@@ -52,36 +52,44 @@ class Artigos : Fragment() {
 
     private fun setupSearchView() {
         binding.searchViewArtigos.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+
             override fun onQueryTextSubmit(query: String?): Boolean {
                 query?.let {
+                    binding.searchViewArtigos.clearFocus()
+
                     viewModel.buscarArtigos(it)
                 }
-                binding.searchViewArtigos.clearFocus()
                 return true
             }
+
             override fun onQueryTextChange(newText: String?): Boolean {
-                newText?.let {
-                    viewModel.buscarArtigos(it)
+                if (newText.isNullOrBlank()) {
+                    viewModel.buscarArtigos("")
                 }
-                return true
+                return false
             }
         })
     }
 
     private fun observeViewModel() {
-        //Observa a lista de artigos
         viewModel.listaDeArtigos.observe(viewLifecycleOwner) { listaDeArtigos ->
-
             artigosAdapter.submitList(listaDeArtigos)
         }
-        viewModel.eventoNavegarParaDetalhes.observe(viewLifecycleOwner) { artigoId ->
-            artigoId?.let { id ->
-                Toast.makeText(context, "Navegar para detalhes do artigo ID: $id", Toast.LENGTH_SHORT).show()
 
-                viewModel.onNavegacaoParaDetalhesCompleta()
+        viewModel.eventoAbrirLink.observe(viewLifecycleOwner) { url ->
+            url?.let { link ->
+                try {
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
+                    intent.data = android.net.Uri.parse(link)
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(context, "Não foi possível abrir a notícia", Toast.LENGTH_SHORT).show()
+                }
+                viewModel.onNavegacaoCompleta()
             }
         }
     }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null

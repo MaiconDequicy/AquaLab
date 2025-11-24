@@ -8,6 +8,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
     private const val BASE_URL = "https://api.openweathermap.org/"
+    private const val BASE_URL_NEWS = "https://newsapi.org/"
 
     private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
@@ -42,5 +43,13 @@ object RetrofitInstance {
 
     val chatGptApiService: ChatGptApiService by lazy {
         chatRetrofit.create(ChatGptApiService::class.java)
+    }
+
+    val api: NewsApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL_NEWS)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(NewsApiService::class.java)
     }
 }
