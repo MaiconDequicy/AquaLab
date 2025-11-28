@@ -9,27 +9,23 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
-import br.iots.aqualab.R
+import br.iots.aqualab.data.database.AppDatabase // Importação do Banco
 import br.iots.aqualab.databinding.FragmentCriacaoPontosColetaBinding
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.ui.activities.DetalhesPontoColeta
 import br.iots.aqualab.ui.activities.IntegracaoPontoColeta
-import br.iots.aqualab.ui.activities.LancamentoManual
 import br.iots.aqualab.ui.adapter.PontoColetaAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import br.iots.aqualab.ui.viewmodel.CriacaoViewModelFactory
 
 class CriacaoPontosColeta : Fragment() {
 
     private var _binding: FragmentCriacaoPontosColetaBinding? = null
     private val binding get() = _binding!!
-    private val pontosviewModel: CriacaoPontosColetaViewModel by viewModels()
 
-    private lateinit var fabPrincipal: FloatingActionButton
-    private lateinit var fabAddManual: FloatingActionButton
-    private lateinit var fabImportar: FloatingActionButton
-
-    private var isAllFabsVisible: Boolean = false
+    private val pontosviewModel: CriacaoPontosColetaViewModel by viewModels {
+        CriacaoViewModelFactory(AppDatabase.getDatabase(requireContext()).medicaoDao())
+    }
 
     private lateinit var pontoColetaAdapter: PontoColetaAdapter
 
@@ -43,49 +39,16 @@ class CriacaoPontosColeta : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         configurarRecyclerView()
         observarViewModel()
-
-        fabPrincipal = binding.fabPrincipal
-        fabAddManual = binding.fabAddManual
-        fabImportar = binding.fabImportar
-
-        fabAddManual.visibility = View.GONE
-        fabImportar.visibility = View.GONE
-        isAllFabsVisible = false
-
-        fabPrincipal.setOnClickListener {
-            if (!isAllFabsVisible) {
-                fabPrincipal.setImageResource(R.drawable.close_24)
-            } else {
-                fabPrincipal.setImageResource(R.drawable.add_24)
-            }
-            toggleFabMenu()
-        }
-
-        fabAddManual.setOnClickListener {
-            Toast.makeText(context, "Adicionar manualmente clicado", Toast.LENGTH_SHORT).show()
-            val intent = Intent(activity, LancamentoManual::class.java)
-            startActivity(intent)
-            toggleFabMenu()
-        }
-
-        fabImportar.setOnClickListener {
-            val intent = Intent(activity, IntegracaoPontoColeta::class.java)
-            Toast.makeText(context, "Integrar Ponto de Coleta clicado", Toast.LENGTH_SHORT).show()
-            startActivity(intent)
-        }
+        configurarFab()
     }
 
-    private fun toggleFabMenu() {
-        isAllFabsVisible = if (!isAllFabsVisible) {
-            fabAddManual.show()
-            fabImportar.show()
-            true
-        } else {
-            fabAddManual.hide()
-            fabImportar.hide()
-            false
+    private fun configurarFab() {
+        binding.fabAdicionarPonto.setOnClickListener {
+            val intent = Intent(requireContext(), IntegracaoPontoColeta::class.java)
+            startActivity(intent)
         }
     }
 
@@ -102,7 +65,6 @@ class CriacaoPontosColeta : Fragment() {
 
     private fun observarViewModel() {
         pontosviewModel.pontosColeta.observe(viewLifecycleOwner) { listaPontos ->
-
             pontoColetaAdapter.atualizarLista(listaPontos)
         }
 
@@ -121,6 +83,10 @@ class CriacaoPontosColeta : Fragment() {
             putExtra("PONTO_COLETA_EXTRA", ponto)
         }
         startActivity(intent)
+    }
+
+    override fun onResume() {
+        super.onResume()
     }
 
     override fun onDestroyView() {

@@ -3,13 +3,16 @@ package br.iots.aqualab.ui.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import br.iots.aqualab.data.dao.MedicaoDao
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.repository.PontoColetaRepository
 import kotlinx.coroutines.launch
 
-class CriacaoPontosColetaViewModel : ViewModel() {
-
+class CriacaoPontosColetaViewModel(
+    private val medicaoDao: MedicaoDao
+) : ViewModel() {
     private val pontoColetaRepository = PontoColetaRepository()
 
     private val _pontosColeta = MutableLiveData<List<PontoColeta>>()
@@ -27,11 +30,8 @@ class CriacaoPontosColetaViewModel : ViewModel() {
     private val _pontoDeletado = MutableLiveData<Boolean>(false)
     val pontoDeletado: LiveData<Boolean> = _pontoDeletado
 
-    // --- NOVO ---
-    // LiveData para expor a lista de IDs disponíveis da nuvem
     private val _idsDisponiveisNuvem = MutableLiveData<List<String>>()
     val idsDisponiveisNuvem: LiveData<List<String>> = _idsDisponiveisNuvem
-
 
     init {
         carregarPontosDeColetaDoUsuario()
@@ -49,16 +49,13 @@ class CriacaoPontosColetaViewModel : ViewModel() {
         }
     }
 
-    private fun carregarPontosDeColetaDoUsuario()
-    {
+    private fun carregarPontosDeColetaDoUsuario() {
         viewModelScope.launch {
             _isLoading.value = true
             val resultado = pontoColetaRepository.getPontosColetaDoUsuario()
 
             resultado.onSuccess { listaDePontos ->
                 _pontosColeta.value = listaDePontos
-                if (listaDePontos.isEmpty()) {
-                }
             }.onFailure { exception ->
                 _errorMessage.value = "Erro ao carregar pontos: ${exception.message}"
             }
@@ -93,6 +90,13 @@ class CriacaoPontosColetaViewModel : ViewModel() {
             ponto.id?.let { pontoId ->
                 val resultado = pontoColetaRepository.deletarPontoColeta(pontoId)
                 resultado.onSuccess {
+                    val idParaDeletarLocal = if (!ponto.pontoIdNuvem.isNullOrEmpty()) {
+                        ponto.pontoIdNuvem
+                    } else {
+                        ponto.id.toString()
+                    }
+                    medicaoDao.deletarMedicoesDoPonto(idParaDeletarLocal)
+
                     _pontoDeletado.value = true
                     carregarPontosDeColetaDoUsuario()
                 }.onFailure { exception ->
@@ -107,5 +111,15 @@ class CriacaoPontosColetaViewModel : ViewModel() {
     fun resetarStatusOperacao() {
         _operacaoConcluida.value = false
         _errorMessage.value = null
+    }
+}
+
+class CriacaoViewModelFactory(private val dao: MedicaoDao) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(CriacaoPontosColetaViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return CriacaoPontosColetaViewModel(dao) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }

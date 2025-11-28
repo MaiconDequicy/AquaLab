@@ -10,15 +10,20 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import br.iots.aqualab.R
+import br.iots.aqualab.data.database.AppDatabase
 import br.iots.aqualab.databinding.ActivityIntegracaoPontoColetaBinding
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
+import br.iots.aqualab.ui.viewmodel.CriacaoViewModelFactory
 import com.google.android.material.appbar.MaterialToolbar
 
 class IntegracaoPontoColeta : AppCompatActivity() {
 
     private lateinit var binding: ActivityIntegracaoPontoColetaBinding
-    private val viewModel: CriacaoPontosColetaViewModel by viewModels()
+
+    private val viewModel: CriacaoPontosColetaViewModel by viewModels {
+        CriacaoViewModelFactory(AppDatabase.getDatabase(this).medicaoDao())
+    }
     private var pontoParaEditar: PontoColeta? = null
     private enum class Acao { CRIANDO, EDITANDO, IDLE }
     private var acaoAtual = Acao.IDLE

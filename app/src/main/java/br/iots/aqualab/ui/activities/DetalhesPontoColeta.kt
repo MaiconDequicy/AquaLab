@@ -2,6 +2,7 @@ package br.iots.aqualab.ui.activities
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
@@ -10,23 +11,24 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.observe
+import br.iots.aqualab.data.database.AppDatabase
 import br.iots.aqualab.databinding.ActivityDetalhesPontoColetaBinding
-import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.model.LeituraSensor
+import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.ui.adapter.LeiturasAdapter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
+import br.iots.aqualab.ui.viewmodel.CriacaoViewModelFactory
 import br.iots.aqualab.ui.viewmodel.DetalhesPontoColetaViewModel
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import br.iots.aqualab.ui.viewmodel.DetalhesViewModelFactory
+import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.data.Entry
 import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
-import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.formatter.ValueFormatter
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import java.text.SimpleDateFormat
 import java.util.*
-import java.util.Date
-import android.graphics.Color
 
 class DetalhesPontoColeta : AppCompatActivity() {
 
@@ -35,7 +37,15 @@ class DetalhesPontoColeta : AppCompatActivity() {
     private var pontoColetaAtual: PontoColeta? = null
 
     private val operacoesViewModel: CriacaoPontosColetaViewModel by viewModels()
-    private val detalhesViewModel: DetalhesPontoColetaViewModel by viewModels()
+    {
+        CriacaoViewModelFactory(AppDatabase.getDatabase(this).medicaoDao())
+    }
+
+    private val detalhesViewModel: DetalhesPontoColetaViewModel by viewModels {
+        DetalhesViewModelFactory(
+            br.iots.aqualab.data.database.AppDatabase.getDatabase(this).medicaoDao()
+        )
+    }
 
     private lateinit var leiturasAdapter: LeiturasAdapter
 
@@ -82,7 +92,13 @@ class DetalhesPontoColeta : AppCompatActivity() {
         pontoInicial?.let {
             pontoColetaAtual = it
             preencherDados(it)
-            detalhesViewModel.carregarLeituras(it.pontoIdNuvem)
+            // Lógica de ID corrigida para carregar dados locais ou nuvem
+            val idParaMonitorar = if (!it.pontoIdNuvem.isNullOrEmpty()) {
+                it.pontoIdNuvem
+            } else {
+                it.id.toString()
+            }
+            detalhesViewModel.carregarLeituras(idParaMonitorar)
         }
     }
 
@@ -182,12 +198,10 @@ class DetalhesPontoColeta : AppCompatActivity() {
             return
         }
 
-        // Agrupa leituras por sensor
         val sensoresAgrupados = leituras.groupBy {
             it.sensorId?.lowercase() ?: "desconhecido"
         }
 
-        // Vai armazenar todos os datasets plotados
         val datasets = mutableListOf<LineDataSet>()
 
         val cores = listOf(
@@ -202,10 +216,8 @@ class DetalhesPontoColeta : AppCompatActivity() {
 
         sensoresAgrupados.forEach { (sensorId, lista) ->
 
-            // Ordena pelo timestamp real
             val ordenadas = lista.sortedBy { it.timestamp?.toDate()?.time ?: 0L }
 
-            // Converte para Entries numerados (evita Float overflow)
             val entries = ordenadas.mapIndexed { index, leitura ->
                 val v = leitura.valor?.toFloat() ?: 0f
                 Entry(index.toFloat(), v)
@@ -271,14 +283,32 @@ class DetalhesPontoColeta : AppCompatActivity() {
         chart.invalidate()
     }
 
-
     private fun configurarFabSpeedDial() {
         binding.fabAcaoSecundaria1.visibility = View.GONE
         binding.fabAcaoSecundaria2.visibility = View.GONE
+        binding.fabNovaMedicao.visibility = View.GONE
 
         binding.fabConfigPontoColeta.setOnClickListener {
             isSpeedDialOpen = !isSpeedDialOpen
             if (isSpeedDialOpen) abrirSpeedDial() else fecharSpeedDial()
+        }
+
+        binding.fabNovaMedicao.setOnClickListener {
+            pontoColetaAtual?.let { ponto ->
+                val intent = Intent(this, LancamentoManual::class.java)
+
+                // Lógica robusta de ID (Nuvem ou Local) para salvar corretamente
+                val idParaVinculo = if (!ponto.pontoIdNuvem.isNullOrEmpty()) {
+                    ponto.pontoIdNuvem
+                } else {
+                    ponto.id.toString()
+                }
+
+                intent.putExtra("PONTO_ID", idParaVinculo)
+                intent.putExtra("NOME_PONTO", ponto.nome)
+                startActivity(intent)
+            }
+            fecharSpeedDial()
         }
 
         binding.fabAcaoSecundaria1.setOnClickListener {
@@ -299,12 +329,14 @@ class DetalhesPontoColeta : AppCompatActivity() {
 
     private fun abrirSpeedDial() {
         binding.fabConfigPontoColeta.animate().rotation(45f).setDuration(200).start()
+        mostrarBotao(binding.fabNovaMedicao)
         mostrarBotao(binding.fabAcaoSecundaria1)
         mostrarBotao(binding.fabAcaoSecundaria2)
     }
 
     private fun fecharSpeedDial() {
         binding.fabConfigPontoColeta.animate().rotation(0f).setDuration(200).start()
+        esconderBotao(binding.fabNovaMedicao)
         esconderBotao(binding.fabAcaoSecundaria1)
         esconderBotao(binding.fabAcaoSecundaria2)
     }

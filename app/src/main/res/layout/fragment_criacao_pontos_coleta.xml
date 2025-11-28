@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.fragments.CriacaoPontosColeta"
-    >
+    tools:context=".ui.fragments.CriacaoPontosColeta">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -45,49 +44,17 @@
                 android:layout_weight="1"
                 tools:listitem="@layout/item_ponto_coleta" />
         </LinearLayout>
-
     </LinearLayout>
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_add_manual"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@color/blue_700"
-            android:src="@drawable/add_circle_24dp"
-            android:visibility="invisible"
-            app:fabSize="mini"
-            app:layout_constraintBottom_toTopOf="@id/fab_principal"
-            app:layout_constraintEnd_toEndOf="@id/fab_principal"
-            app:tint="@android:color/white"
-            tools:visibility="visible" />
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
+        android:id="@+id/fab_adicionar_ponto"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:backgroundTint="@color/blue_700"
+        android:contentDescription="Adicionar novo ponto de coleta"
+        android:src="@drawable/add_24"
+        app:tint="@android:color/white" />
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_importar"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:backgroundTint="@color/blue_700"
-            android:src="@drawable/add_location_24dp"
-            android:visibility="invisible"
-            app:fabSize="mini"
-            app:layout_constraintBottom_toTopOf="@id/fab_add_manual"
-            app:layout_constraintEnd_toEndOf="@id/fab_add_manual"
-            app:tint="@android:color/white"
-            tools:visibility="visible" />
-
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_principal"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:backgroundTint="@color/blue_700"
-            android:src="@drawable/add_24"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:tint="@android:color/white"/>
-    </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>

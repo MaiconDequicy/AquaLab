@@ -3,14 +3,26 @@ package br.iots.aqualab.ui.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import br.iots.aqualab.data.dao.MedicaoDao
 import br.iots.aqualab.model.LeituraSensor
+import br.iots.aqualab.model.MedicaoManual
 import br.iots.aqualab.repository.PontoColetaRepository
+import com.google.firebase.Timestamp
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.util.Date
 
-class DetalhesPontoColetaViewModel : ViewModel() {
+class DetalhesPontoColetaViewModel(
+    private val medicaoDao: MedicaoDao
+) : ViewModel() {
 
     private val repository = PontoColetaRepository()
+
+    private val _leiturasNuvemFlow = MutableStateFlow<List<LeituraSensor>>(emptyList())
 
     private val _leituras = MutableLiveData<List<LeituraSensor>>()
     val leituras: LiveData<List<LeituraSensor>> = _leituras
@@ -24,29 +36,61 @@ class DetalhesPontoColetaViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    fun carregarLeituras(pontoIdNuvem: String?) {
-        if (pontoIdNuvem.isNullOrEmpty()) {
-            _errorMessage.value = "Não há um ID da nuvem associado a este ponto."
-            _leituras.value = emptyList()
-            _ultimaLeitura.value = null
+    fun carregarLeituras(pontoId: String?) {
+        if (pontoId.isNullOrEmpty()) {
+            _errorMessage.value = "ID inválido."
             return
         }
 
         viewModelScope.launch {
             _isLoading.value = true
-            try {
-                val listaDeLeituras = repository.getLeiturasRecentes(pontoIdNuvem, limit = 50)
 
-                _leituras.value = listaDeLeituras
-                _ultimaLeitura.value = listaDeLeituras.firstOrNull()
+            launch {
+                try {
+                    val listaNuvem = repository.getLeiturasRecentes(pontoId, limit = 50)
+                    _leiturasNuvemFlow.value = listaNuvem
+                } catch (e: Exception) {
+                } finally {
+                    _isLoading.value = false
+                }
+            }
 
-            } catch (exception: Exception) {
-                _errorMessage.value = "Erro ao carregar leituras: ${exception.message}"
-                _leituras.value = emptyList()
-                _ultimaLeitura.value = null
-            } finally {
-                _isLoading.value = false
+            combine(
+                _leiturasNuvemFlow,
+                medicaoDao.getMedicoesPorPonto(pontoId)
+            ) { nuvem, local ->
+
+                val localConvertido = local.map { it.toLeituraSensor() }
+
+                val listaCompleta = nuvem + localConvertido
+
+                listaCompleta.sortedByDescending { it.timestamp?.toDate()?.time ?: 0L }
+
+            }.collectLatest { listaFinal ->
+                _leituras.value = listaFinal
+                _ultimaLeitura.value = listaFinal.firstOrNull()
             }
         }
+    }
+
+    private fun MedicaoManual.toLeituraSensor(): LeituraSensor {
+        return LeituraSensor(
+            pontoId = this.pontoIdNuvem,
+            sensorId = this.parametro,
+            valor = this.valor,
+            timestamp = Timestamp(Date(this.timestamp))
+        )
+    }
+}
+
+class DetalhesViewModelFactory(
+    private val medicaoDao: MedicaoDao
+) : ViewModelProvider.Factory {
+    override fun <T : ViewModel> create(modelClass: Class<T>): T {
+        if (modelClass.isAssignableFrom(DetalhesPontoColetaViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return DetalhesPontoColetaViewModel(medicaoDao) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
