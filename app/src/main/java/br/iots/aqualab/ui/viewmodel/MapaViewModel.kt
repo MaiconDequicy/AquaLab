@@ -14,7 +14,15 @@ import kotlinx.coroutines.launch
 
 class MapaViewModel : ViewModel() {
 
-    private val repository = PontoColetaRepository()
+    private val pontoColetaRepository = PontoColetaRepository()
+    private val weatherRepository = WeatherRepository()
+    private val analiseQualidadeRepository = AnaliseQualidadeRepository()
+
+    private val getDetalhesCompletosUseCase = GetDetalhesCompletosDoPontoUseCase(
+        pontoColetaRepository,
+        weatherRepository,
+        analiseQualidadeRepository
+    )
 
     private val _pontosPublicos = MutableLiveData<List<PontoColeta>>()
     val pontosPublicos: LiveData<List<PontoColeta>> = _pontosPublicos
@@ -31,15 +39,6 @@ class MapaViewModel : ViewModel() {
     private val _errorMessage = MutableLiveData<String?>()
     val errorMessage: LiveData<String?> = _errorMessage
 
-    private val pontoColetaRepository = PontoColetaRepository()
-    private val weatherRepository = WeatherRepository()
-    private val analiseQualidadeRepository = AnaliseQualidadeRepository()
-    private val getDetalhesCompletosUseCase = GetDetalhesCompletosDoPontoUseCase(
-        pontoColetaRepository,
-        weatherRepository,
-        analiseQualidadeRepository
-    )
-
     init {
         carregarPontosPublicos()
     }
@@ -47,7 +46,8 @@ class MapaViewModel : ViewModel() {
     private fun carregarPontosPublicos() {
         _isLoading.value = true
         viewModelScope.launch {
-            val result = repository.getPontosPublicos()
+            val result = pontoColetaRepository.getPontosPublicos()
+
             result.onSuccess { pontos ->
                 _pontosPublicos.value = pontos
             }.onFailure { exception ->
@@ -62,28 +62,36 @@ class MapaViewModel : ViewModel() {
         _detalhesDoPonto.value = null
 
         viewModelScope.launch {
-            val result = getDetalhesCompletosUseCase(ponto) // Usa o UseCase
+            val result = getDetalhesCompletosUseCase(ponto)
+
             result.onSuccess { detalhesResult ->
                 _detalhesDoPonto.value = detalhesResult.info
 
-                val listaAtual = _pontosPublicos.value ?: emptyList()
-                val listaAtualizada = listaAtual.map { p ->
-                    if (p.id == ponto.id) {
-                        p.copy(classificacao = detalhesResult.classificacao) // Atualiza a classificação
-                    } else {
-                        p
-                    }
-                }
-                _pontosPublicos.value = listaAtualizada
+                atualizarClassificacaoLocalmente(ponto.id, detalhesResult.classificacao)
 
             }.onFailure { exception ->
                 _errorMessage.value = "Erro ao buscar detalhes: ${exception.message}"
+                onDialogDetalhesDismissed()
             }
+
             _isLoadingDetalhes.value = false
         }
     }
 
+    private fun atualizarClassificacaoLocalmente(pontoId: String, novaClassificacao: String) {
+        val listaAtual = _pontosPublicos.value ?: emptyList()
+        val listaAtualizada = listaAtual.map { p ->
+            if (p.id == pontoId) {
+                p.copy(classificacao = novaClassificacao)
+            } else {
+                p
+            }
+        }
+        _pontosPublicos.value = listaAtualizada
+    }
+
     fun onDialogDetalhesDismissed() {
         _detalhesDoPonto.value = null
+        _isLoadingDetalhes.value = false
     }
 }

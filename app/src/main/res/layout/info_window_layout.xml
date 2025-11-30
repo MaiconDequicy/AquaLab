@@ -14,6 +14,7 @@
         android:layout_height="wrap_content"
         android:text="Detalhes do Ponto"
         android:textStyle="bold"
+        android:layout_gravity="center"
         android:fontFamily="@font/poppins"
         android:textColor="@color/blue_700" />
 
@@ -25,21 +26,43 @@
         android:fontFamily="@font/poppins"
         android:text="Ponto de Coleta: Nome do Ponto" />
 
-    <TextView
-        android:id="@+id/tv_info_qualidade"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:fontFamily="@font/poppins"
-        android:text="Qualidade: Carregando..." />
-
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:gravity="center"
-        android:text="Toque para ver detalhes"
-        android:fontFamily="@font/poppins"
-        android:textColor="@color/light_gray"
-        android:textSize="12sp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="12dp">
 
+        <TextView
+            android:id="@+id/tv_info_qualidade"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/poppins"
+            android:text="Qualidade: Carregando..." />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/smart_toy_24"
+            app:tint="@color/blue_700" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ver Análise de IA"
+            android:layout_gravity="center"
+            android:textStyle="bold"
+            android:textColor="@color/blue_700"
+            android:fontFamily="@font/poppins"
+            android:layout_marginStart="4dp"/>
+    </LinearLayout>
 </LinearLayout>

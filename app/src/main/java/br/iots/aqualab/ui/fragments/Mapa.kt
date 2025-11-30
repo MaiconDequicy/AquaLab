@@ -17,6 +17,7 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
     private var gMap: GoogleMap? = null
     private val viewModel: MapaViewModel by viewModels()
 
+    // Referências para os Dialogs para evitar vazamento de memória
     private var detalhesDialog: Dialog? = null
     private var legendaDialog: Dialog? = null
 
@@ -52,9 +53,14 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
         googleMap.uiSettings.isZoomControlsEnabled = true
         googleMap.setInfoWindowAdapter(this)
 
+        // Listener para clique no balão (InfoWindow)
         googleMap.setOnInfoWindowClickListener { marker ->
-            (marker.tag as? PontoColeta)?.let {
-                viewModel.onDetalhesRequested(it)
+            val ponto = marker.tag as? PontoColeta
+
+            if (ponto != null) {
+                marker.hideInfoWindow()
+                // Ao clicar no balão, pedimos os dados detalhados (IA, Clima)
+                viewModel.onDetalhesRequested(ponto)
             }
         }
 
@@ -116,10 +122,10 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
         val ponto = marker.tag as? PontoColeta
 
         view.findViewById<TextView>(R.id.tv_info_nome_ponto).text =
-            "Ponto de Coleta: ${ponto?.nome ?: "Desconhecido"}"
+            "Ponto: ${ponto?.nome ?: "Desconhecido"}"
 
         view.findViewById<TextView>(R.id.tv_info_qualidade).text =
-            "Qualidade: ${ponto?.classificacao ?: "Não classificado"}"
+            "Qualidade: ${ponto?.classificacao ?: "..."}"
 
         return view
     }
@@ -136,11 +142,10 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
             activity,
             com.google.android.material.R.style.ThemeOverlay_Material3_MaterialAlertDialog
         ).apply {
-
             requestWindowFeature(Window.FEATURE_NO_TITLE)
 
             val dialogView = LayoutInflater.from(context)
-                .inflate(R.layout.dialog_ponto_detalhes, null)
+                .inflate(R.layout.dialog_ponto_detalhes, null) // Seu XML novo
 
             setContentView(dialogView)
 
@@ -156,12 +161,13 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
         detalhesDialog?.show()
     }
 
-
     private fun updateDialogoDetalhes(detalhes: PontoDetalhadoInfo?) {
         val dialog = detalhesDialog ?: return
 
         val progress = dialog.findViewById<ProgressBar>(R.id.dialog_progressBar)
         val content = dialog.findViewById<LinearLayout>(R.id.dialog_content)
+
+        val btnDetalhes = dialog.findViewById<Button>(R.id.btnDetalhes)
 
         if (detalhes != null) {
             progress.visibility = View.GONE
@@ -178,6 +184,23 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
 
             dialog.findViewById<TextView>(R.id.dialog_tv_dica).text =
                 detalhes.dicaEducativa
+
+            btnDetalhes.setOnClickListener {
+                dialog.dismiss()
+
+                val fragmentHistorico = HistoricoPontoColeta()
+
+                val bundle = Bundle()
+                bundle.putString("nome_ponto", detalhes.nomeEstacao)
+                bundle.putString("id_ponto", detalhes.id)
+
+                fragmentHistorico.arguments = bundle
+
+                parentFragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, fragmentHistorico)
+                    .addToBackStack(null)
+                    .commit()
+            }
 
         } else {
             progress.visibility = View.VISIBLE
@@ -201,40 +224,11 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
             setOnDismissListener { legendaDialog = null }
         }
 
-        setupLegendaItem(
-            dialogView.findViewById(R.id.legenda_otima),
-            R.drawable.circle_blue,
-            "Ótima",
-            "Água em condições ideais, própria para consumo e lazer."
-        )
-
-        setupLegendaItem(
-            dialogView.findViewById(R.id.legenda_boa),
-            R.drawable.circle_green,
-            "Boa",
-            "Boa para uso geral, baixo risco."
-        )
-
-        setupLegendaItem(
-            dialogView.findViewById(R.id.legenda_regular),
-            R.drawable.circle_yellow,
-            "Regular",
-            "Requer atenção e monitoramento."
-        )
-
-        setupLegendaItem(
-            dialogView.findViewById(R.id.legenda_ruim),
-            R.drawable.circle_orange,
-            "Ruim",
-            "Qualidade comprometida por poluição."
-        )
-
-        setupLegendaItem(
-            dialogView.findViewById(R.id.legenda_pessima),
-            R.drawable.circle_red,
-            "Péssima",
-            "Evitar contato. Contaminação crítica."
-        )
+        setupLegendaItem(dialogView.findViewById(R.id.legenda_otima), R.drawable.circle_blue, "Ótima", "Água em condições ideais, própria para consumo e lazer.")
+        setupLegendaItem(dialogView.findViewById(R.id.legenda_boa), R.drawable.circle_green, "Boa", "Condições favoráveis para a vida aquática e para a maioria dos usos. Baixo risco.")
+        setupLegendaItem(dialogView.findViewById(R.id.legenda_regular), R.drawable.circle_yellow, "Regular", "Sinais de alteração. Requer atenção e monitoramento.")
+        setupLegendaItem(dialogView.findViewById(R.id.legenda_ruim), R.drawable.circle_orange, "Ruim", "Qualidade comprometida por poluição. Não recomendada para consumo ou contato direto.")
+        setupLegendaItem(dialogView.findViewById(R.id.legenda_pessima), R.drawable.circle_red, "Péssima", "Níveis críticos de contaminação. Evite qualquer tipo de contato.")
 
         dialogView.findViewById<Button>(R.id.btn_entendi).setOnClickListener {
             legendaDialog?.dismiss()
@@ -243,14 +237,17 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
         legendaDialog?.show()
     }
 
-    private fun setupLegendaItem(
-        view: View,
-        colorRes: Int,
-        title: String,
-        description: String
-    ) {
+    private fun setupLegendaItem(view: View, colorRes: Int, title: String, description: String) {
         view.findViewById<View>(R.id.legenda_cor).setBackgroundResource(colorRes)
         view.findViewById<TextView>(R.id.legenda_titulo).text = title
         view.findViewById<TextView>(R.id.legenda_descricao).text = description
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        detalhesDialog?.dismiss()
+        detalhesDialog = null
+        legendaDialog?.dismiss()
+        legendaDialog = null
     }
 }

@@ -115,6 +115,7 @@ class GetDetalhesCompletosDoPontoUseCase(
                     classificacao
                 )
                 val detalhes = PontoDetalhadoInfo(
+                    id = ponto.id,
                     nomeEstacao = ponto.nome,
                     condicoesAtuais = condicoes,
                     temperatura = temperatura,
