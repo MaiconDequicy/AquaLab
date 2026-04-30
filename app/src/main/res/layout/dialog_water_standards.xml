@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@drawable/dialog_rounded_bg">
+
+    <!-- Título -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Padrões de Qualidade da Água"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="?attr/colorPrimary"
+        android:fontFamily="@font/poppins_bold"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Seletor de tipo de uso -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_usage_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tipo de Uso da Água"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_marginBottom="16dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_usage_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:fontFamily="@font/poppins"
+            tools:text="Consumo Humano" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Descrição do tipo de uso -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="8dp"
+        app:cardBackgroundColor="?attr/colorSurface"
+        app:strokeColor="@color/cinza_fraco"
+        app:strokeWidth="1dp"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:id="@+id/tv_usage_description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="12dp"
+            android:textAppearance="?attr/textAppearanceBody2"
+            android:fontFamily="@font/poppins"
+            android:textColor="?attr/colorOnSurface"
+            android:lineSpacingMultiplier="1.2"
+            tools:text="Água própria para consumo humano..." />
+
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Tabela de padrões (RecyclerView) -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Parâmetros e Padrões:"
+        android:textAppearance="?attr/textAppearanceSubtitle1"
+        android:fontFamily="@font/poppins_bold"
+        android:textColor="?attr/colorPrimary"
+        android:layout_marginBottom="8dp" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rv_standards"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="300dp"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        tools:listitem="@layout/item_water_standard"
+        android:nestedScrollingEnabled="true"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Botão Fechar -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_close"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Entendi"
+        android:fontFamily="@font/poppins"
+        style="@style/Widget.MaterialComponents.Button" />
+
+</LinearLayout>

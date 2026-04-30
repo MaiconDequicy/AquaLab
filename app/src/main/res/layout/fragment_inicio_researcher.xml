@@ -19,29 +19,65 @@
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/boasVindas"
-                android:layout_width="wrap_content"
+            <!-- Header com botão de legenda -->
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Olá, Maicon!"
-                android:textAppearance="?attr/textAppearanceHeadline5"
-                android:textColor="@color/blue"
-                android:fontFamily="@font/poppins_bold"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
                 android:layout_marginStart="14dp"
                 android:layout_marginTop="14dp"
-                android:layout_marginEnd="14dp"
-                />
+                android:layout_marginEnd="14dp">
 
-            <TextView
-                android:id="@+id/descriçãoPesquisador"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textAppearance="?attr/textAppearanceBody1"
-                android:textColor="@color/light_gray"
-                android:text="Um resumo dos seus sensores hoje"
-                android:fontFamily="@font/poppins"
-                android:layout_marginStart="14dp"
-                android:layout_marginEnd="14dp"
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/boasVindas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Olá, Maicon!"
+                        android:textAppearance="?attr/textAppearanceHeadline5"
+                        android:textColor="@color/blue"
+                        android:fontFamily="@font/poppins_bold"
+                        />
+
+                    <TextView
+                        android:id="@+id/descriçãoPesquisador"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textAppearance="?attr/textAppearanceBody1"
+                        android:textColor="@color/light_gray"
+                        android:text="Um resumo dos seus sensores hoje"
+                        android:fontFamily="@font/poppins"
+                        />
+                </LinearLayout>
+
+                <!-- Botão de legenda -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_legenda"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:insetLeft="0dp"
+                    android:insetTop="0dp"
+                    android:insetRight="0dp"
+                    android:insetBottom="0dp"
+                    app:icon="@drawable/info_outline_24"
+                    app:iconGravity="textStart"
+                    app:iconPadding="0dp"
+                    app:iconSize="24dp"
+                    app:iconTint="@color/blue"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:contentDescription="Legendas de qualidade"
+                    />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
                 android:layout_marginBottom="16dp"
                 />
 
@@ -102,6 +138,24 @@
                             android:layout_gravity="center"
                             />
                     </LinearLayout>
+
+                    <!-- Botão de compartilhamento -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btn_share_data"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        app:icon="@drawable/share_24"
+                        app:iconGravity="textStart"
+                        app:iconPadding="0dp"
+                        app:iconSize="24dp"
+                        app:iconTint="@color/blue"
+                        style="@style/Widget.MaterialComponents.Button.TextButton"
+                        android:contentDescription="Compartilhar dados"
+                        />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

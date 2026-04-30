@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="@drawable/dialog_rounded_bg">
+
+    <!-- Título -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Configurações do Gráfico"
+        android:textAppearance="?attr/textAppearanceHeadline6"
+        android:textColor="?attr/colorPrimary"
+        android:fontFamily="@font/poppins"
+        android:gravity="center"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Seletor de tipo de sensor -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_sensor_type"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Tipo de Sensor"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_marginBottom="12dp">
+
+        <AutoCompleteTextView
+            android:id="@+id/actv_sensor_type"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:fontFamily="@font/poppins"
+            tools:text="pH" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Número máximo de amostras -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/til_max_samples"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Número Máximo de Amostras"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/et_max_samples"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:fontFamily="@font/poppins"
+            android:text="50" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Separador -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Filtro de Data (Opcional)"
+        android:textAppearance="?attr/textAppearanceSubtitle2"
+        android:textColor="?attr/colorOnSurface"
+        android:fontFamily="@font/poppins"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Switch para habilitar filtro de data -->
+    <com.google.android.material.switchmaterial.SwitchMaterial
+        android:id="@+id/switch_enable_date_filter"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Habilitar Filtro de Data"
+        android:fontFamily="@font/poppins"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Container para filtros de data (inicialmente invisível) -->
+    <LinearLayout
+        android:id="@+id/container_date_filters"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- Data inicial -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_start_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data Inicial"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:startIconDrawable="@drawable/calendar_today_24dp"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_start_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:fontFamily="@font/poppins"
+                tools:text="20/12/2025 08:00" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Data final -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/til_end_date"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Data Final"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            app:startIconDrawable="@drawable/calendar_today_24dp"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/et_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:fontFamily="@font/poppins"
+                tools:text="20/12/2025 20:00" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Botões de atalho -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Atalhos:"
+            android:textAppearance="?attr/textAppearanceCaption"
+            android:fontFamily="@font/poppins"
+            android:layout_marginBottom="8dp" />
+
+        <com.google.android.material.chip.ChipGroup
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:singleSelection="false">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_last_24h"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Últimas 24h"
+                android:fontFamily="@font/poppins"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_last_week"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Última Semana"
+                android:fontFamily="@font/poppins"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/chip_last_month"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Último Mês"
+                android:fontFamily="@font/poppins"
+                style="@style/Widget.MaterialComponents.Chip.Choice" />
+
+        </com.google.android.material.chip.ChipGroup>
+
+    </LinearLayout>
+
+    <!-- Botões de ação -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:layout_marginTop="16dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Cancelar"
+            android:fontFamily="@font/poppins"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_apply"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Aplicar"
+            android:fontFamily="@font/poppins"
+            style="@style/Widget.MaterialComponents.Button" />
+
+    </LinearLayout>
+
+</LinearLayout>

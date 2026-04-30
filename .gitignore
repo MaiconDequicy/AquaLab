@@ -1,27 +1,29 @@
-    gitignore
-    # Arquivos de compilação gerados
-    /build
-    /app/build
+.gradle
+gitignore
+# Arquivos de compilação gerados
+/build
+/app/build
 
-    # Arquivo de propriedades locais - CRUCIAL PARA SEGURANÇA
-    # Contém as chaves de API e NUNCA deve ser enviado para o Git.
-    local.properties
+# Arquivo de propriedades locais - CRUCIAL PARA SEGURANÇA
+# Contém as chaves de API e NUNCA deve ser enviado para o Git.
+local.properties
 
-    # Pastas e arquivos de configuração do IDE (Android Studio)
-    /.idea
-    /.gradle
-    *.iml
-    *.cxx
+# Pastas e arquivos de configuração do IDE (Android Studio)
+/.idea
+/.gradle
+*.iml
+*.cxx
+.gradle
 
-    # Arquivos de log e bancos de dados temporários
-    *.log
+# Arquivos de log e bancos de dados temporários
+*.log
 
-    # Arquivos gerados pelo Android Studio
-    *.apk
-    *.aab
-    *.ap_
-    .DS_Store
-    /captures
-    /output/
-    .externalNativeBuild
-    
+# Arquivos gerados pelo Android Studio
+*.apk
+*.aab
+*.ap_
+.DS_Store
+/captures
+/output/
+.externalNativeBuild
+

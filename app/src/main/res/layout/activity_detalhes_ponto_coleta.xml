@@ -266,6 +266,74 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Card de Fotos do Local -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/cinza_fraco"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/poppins_bold"
+                                android:text="Fotos do Local"
+                                android:textAppearance="?attr/textAppearanceHeadline6"
+                                android:textColor="@color/blue_700" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btn_add_photo"
+                                style="@style/Widget.MaterialComponents.Button"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Adicionar"
+                                android:fontFamily="@font/poppins"
+                                android:textSize="12sp"
+                                app:icon="@drawable/camera_24"
+                                app:iconSize="18dp"
+                                android:insetTop="4dp"
+                                android:insetBottom="4dp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tv_empty_photos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nenhuma foto adicionada ainda.\nToque em 'Adicionar' para capturar uma foto do local."
+                            android:textAppearance="?attr/textAppearanceBody2"
+                            android:textColor="@color/light_gray"
+                            android:fontFamily="@font/poppins"
+                            android:gravity="center"
+                            android:padding="24dp"
+                            android:visibility="gone" />
+
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/recycler_photos"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                            tools:listitem="@layout/item_foto_local" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
             </LinearLayout>
         </ScrollView>
     </LinearLayout>

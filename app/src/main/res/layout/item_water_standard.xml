@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="8dp"
+    app:cardCornerRadius="8dp"
+    app:cardBackgroundColor="?attr/colorSurface"
+    app:strokeColor="@color/cinza_fraco"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <!-- Nome do parâmetro -->
+        <TextView
+            android:id="@+id/tv_parameter_name"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textAppearance="?attr/textAppearanceSubtitle2"
+            android:textColor="?attr/colorPrimary"
+            android:fontFamily="@font/poppins_bold"
+            android:layout_marginBottom="8dp"
+            tools:text="pH" />
+
+        <!-- Grid de valores -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Linha para cada nível -->
+            <LinearLayout
+                android:id="@+id/layout_level_1"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_level_1_name"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    android:textColor="@color/light_gray"
+                    tools:text="Excelente:" />
+
+                <TextView
+                    android:id="@+id/tv_level_1_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    tools:text="7.0 - 7.8" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_level_2"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_level_2_name"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    android:textColor="@color/light_gray"
+                    tools:text="Bom:" />
+
+                <TextView
+                    android:id="@+id/tv_level_2_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    tools:text="6.5 - 8.5" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_level_3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="4dp"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_level_3_name"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    android:textColor="@color/light_gray"
+                    tools:text="Regular:" />
+
+                <TextView
+                    android:id="@+id/tv_level_3_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    tools:text="6.0 - 9.0" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/layout_level_4"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:visibility="gone"
+                tools:visibility="visible">
+
+                <TextView
+                    android:id="@+id/tv_level_4_name"
+                    android:layout_width="100dp"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    android:textColor="@color/light_gray"
+                    tools:text="Ruim:" />
+
+                <TextView
+                    android:id="@+id/tv_level_4_value"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:textAppearance="?attr/textAppearanceCaption"
+                    android:fontFamily="@font/poppins"
+                    tools:text="Fora dos padrões" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

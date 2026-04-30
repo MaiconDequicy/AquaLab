@@ -1,19 +1,38 @@
 package br.iots.aqualab.ui.activities
 
+import android.Manifest
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.MediaStore
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.observe
+import androidx.lifecycle.lifecycleScope
+import br.iots.aqualab.R
+import br.iots.aqualab.constants.WaterQualityConstants
 import br.iots.aqualab.databinding.ActivityDetalhesPontoColetaBinding
+import br.iots.aqualab.databinding.DialogFotoComentarioBinding
+import br.iots.aqualab.model.FotoLocal
 import br.iots.aqualab.model.PontoColeta
 import br.iots.aqualab.model.LeituraSensor
+import br.iots.aqualab.repository.FotoLocalRepository
+import br.iots.aqualab.repository.PontoColetaRepository
 import br.iots.aqualab.ui.adapter.LeiturasAdapter
+import br.iots.aqualab.ui.adapters.FotoLocalAdapter
+import br.iots.aqualab.ui.components.ChartConfigDialog
+import br.iots.aqualab.ui.components.ChartDataFilter
+import br.iots.aqualab.ui.components.TimestampAxisFormatter
 import br.iots.aqualab.ui.viewmodel.CriacaoPontosColetaViewModel
 import br.iots.aqualab.ui.viewmodel.DetalhesPontoColetaViewModel
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -23,6 +42,8 @@ import com.github.mikephil.charting.data.LineData
 import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.components.Legend
 import com.github.mikephil.charting.formatter.ValueFormatter
+import kotlinx.coroutines.launch
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.Date
@@ -38,6 +59,18 @@ class DetalhesPontoColeta : AppCompatActivity() {
     private val detalhesViewModel: DetalhesPontoColetaViewModel by viewModels()
 
     private lateinit var leiturasAdapter: LeiturasAdapter
+
+    // Filtros e configurações de gráfico
+    private var currentFilter: ChartDataFilter = ChartDataFilter.default()
+    private var selectedSensorType: WaterQualityConstants.SensorType? = null
+    private var availableSensors: List<WaterQualityConstants.SensorType> = emptyList()
+    private val repository = PontoColetaRepository()
+
+    // Fotos locais
+    private lateinit var fotoAdapter: FotoLocalAdapter
+    private lateinit var fotoRepository: FotoLocalRepository
+    private var currentPhotoFile: File? = null
+    private var currentPhotoUri: Uri? = null
 
     private val edicaoPontoResultLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -55,6 +88,31 @@ class DetalhesPontoColeta : AppCompatActivity() {
                 preencherDados(it)
                 Toast.makeText(this, "Ponto atualizado!", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    // Launcher para permissão de câmera
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            launchCamera()
+        } else {
+            Toast.makeText(this, "Permissão de câmera necessária para tirar fotos", Toast.LENGTH_LONG).show()
+        }
+    }
+
+    // Launcher para captura de foto
+    private val cameraLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && currentPhotoFile != null) {
+            showCommentDialog()
+        } else {
+            Toast.makeText(this, "Falha ao capturar foto", Toast.LENGTH_SHORT).show()
+            currentPhotoFile?.delete()
+            currentPhotoFile = null
+            currentPhotoUri = null
         }
     }
 
@@ -77,12 +135,87 @@ class DetalhesPontoColeta : AppCompatActivity() {
 
         configurarRecyclerView()
         configurarGrafico()
+        configurarFotos()
         observarViewModels()
 
         pontoInicial?.let {
             pontoColetaAtual = it
             preencherDados(it)
             detalhesViewModel.carregarLeituras(it.pontoIdNuvem)
+            carregarSensoresDisponiveis(it.pontoIdNuvem)
+            carregarFotos(it.id)
+        }
+
+        // Botão para configurar filtros de gráfico
+        binding.toolbarDetalhesPonto.setOnMenuItemClickListener { menuItem ->
+            when (menuItem.itemId) {
+                android.R.id.home -> {
+                    finish()
+                    true
+                }
+                else -> false
+            }
+        }
+
+        // Adicionar ação de clique longo no gráfico para abrir configurações
+        binding.chartHistorico.setOnLongClickListener {
+            showChartConfigDialog()
+            true
+        }
+    }
+
+    private fun carregarSensoresDisponiveis(pontoIdNuvem: String?) {
+        lifecycleScope.launch {
+            availableSensors = repository.getSensoresDisponiveis(pontoIdNuvem)
+        }
+    }
+
+    private fun showChartConfigDialog() {
+        if (availableSensors.isEmpty()) {
+            Toast.makeText(this, "Nenhum sensor disponível", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        ChartConfigDialog.show(
+            context = this,
+            availableSensors = availableSensors,
+            currentFilter = currentFilter
+        ) { filter, sensorType ->
+            currentFilter = filter
+            selectedSensorType = sensorType
+            recarregarDadosComFiltros()
+        }
+    }
+
+    private fun recarregarDadosComFiltros() {
+        pontoColetaAtual?.pontoIdNuvem?.let { pontoId ->
+            lifecycleScope.launch {
+                try {
+                    val leituras = repository.getLeiturasComFiltros(
+                        pontoIdNuvem = pontoId,
+                        sensorType = selectedSensorType,
+                        startDate = currentFilter.startDate,
+                        endDate = currentFilter.endDate,
+                        limit = currentFilter.maxSamples
+                    )
+
+                    leiturasAdapter.updateData(leituras)
+                    atualizarGrafico(leituras)
+
+                    val sensorName = selectedSensorType?.displayName ?: "Todos"
+                    Toast.makeText(
+                        this@DetalhesPontoColeta,
+                        "Filtrado: $sensorName (${leituras.size} leituras)",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                } catch (e: Exception) {
+                    Toast.makeText(
+                        this@DetalhesPontoColeta,
+                        "Erro ao carregar dados: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
     }
 
@@ -182,49 +315,45 @@ class DetalhesPontoColeta : AppCompatActivity() {
             return
         }
 
-        // Agrupa leituras por sensor
-        val sensoresAgrupados = leituras.groupBy {
-            it.sensorId?.lowercase() ?: "desconhecido"
-        }
+        // Agrupa leituras por tipo de sensor usando as constantes
+        val sensoresAgrupados = LeituraSensor.groupBySensorType(leituras)
 
         // Vai armazenar todos os datasets plotados
         val datasets = mutableListOf<LineDataSet>()
 
-        val cores = listOf(
-            Color.parseColor("#1E88E5"),
-            Color.parseColor("#E53935"),
-            Color.parseColor("#8E24AA"),
-            Color.parseColor("#43A047"),
-            Color.parseColor("#FB8C00")
-        )
+        // Coletar todos os timestamps para formatação do eixo X
+        val todosTimestamps = mutableListOf<Long>()
 
-        var idxGlobal = 0
-
-        sensoresAgrupados.forEach { (sensorId, lista) ->
-
+        sensoresAgrupados.forEach { (sensorType, lista) ->
             // Ordena pelo timestamp real
-            val ordenadas = lista.sortedBy { it.timestamp?.toDate()?.time ?: 0L }
+            val ordenadas = lista.sortedBy { it.getTimestampMillis() }
 
             // Converte para Entries numerados (evita Float overflow)
             val entries = ordenadas.mapIndexed { index, leitura ->
+                todosTimestamps.add(leitura.getTimestampMillis())
                 val v = leitura.valor?.toFloat() ?: 0f
                 Entry(index.toFloat(), v)
             }
 
             if (entries.isEmpty()) return@forEach
 
-            val ds = LineDataSet(entries, sensorId.replaceFirstChar { it.titlecase() }).apply {
-                lineWidth = 2f
+            // Usar a cor específica do sensor das constantes
+            val sensorColor = sensorType.chartColor
+
+            val ds = LineDataSet(entries, sensorType.displayName).apply {
+                lineWidth = 2.5f
                 setDrawCircles(true)
-                circleRadius = 3f
+                circleRadius = 4f
                 setDrawValues(false)
-                mode = LineDataSet.Mode.LINEAR
-                color = cores[idxGlobal % cores.size]
-                setCircleColor(cores[idxGlobal % cores.size])
+                mode = LineDataSet.Mode.CUBIC_BEZIER
+                cubicIntensity = 0.2f
+                color = sensorColor
+                setCircleColor(sensorColor)
+                fillColor = sensorColor
+                setDrawFilled(false)
             }
 
             datasets.add(ds)
-            idxGlobal++
         }
 
         chart.clear()
@@ -236,35 +365,36 @@ class DetalhesPontoColeta : AppCompatActivity() {
 
         chart.data = lineData
 
-        val primeiraListaOrdenada =
-            sensoresAgrupados.values.first().sortedBy { it.timestamp?.toDate()?.time ?: 0L }
+        // Usar o TimestampAxisFormatter personalizado
+        val primeiraListaOrdenada = sensoresAgrupados.values.first()
+            .sortedBy { it.getTimestampMillis() }
 
-        chart.xAxis.valueFormatter = object : ValueFormatter() {
-            override fun getFormattedValue(value: Float): String {
-                val index = value.toInt()
-                if (index in primeiraListaOrdenada.indices) {
-                    val t = primeiraListaOrdenada[index].timestamp?.toDate() ?: Date()
-                    return SimpleDateFormat("HH:mm", Locale.getDefault()).format(t)
-                }
-                return ""
-            }
-        }
+        val timestamps = primeiraListaOrdenada.map { it.getTimestampMillis() }
+
+        // Escolher formato automático baseado no range de datas
+        chart.xAxis.valueFormatter = TimestampAxisFormatter.auto(timestamps)
 
         chart.xAxis.apply {
             position = XAxis.XAxisPosition.BOTTOM
             granularity = 1f
-            setDrawGridLines(false)
+            setDrawGridLines(true)
+            gridColor = Color.LTGRAY
+            labelRotationAngle = -45f // Rotacionar labels para melhor visualização
         }
 
         chart.axisLeft.apply {
             setDrawGridLines(true)
+            gridColor = Color.LTGRAY
         }
 
         chart.axisRight.isEnabled = false
 
         chart.legend.apply {
             form = Legend.LegendForm.LINE
-            textSize = 12f
+            textSize = 11f
+            formSize = 12f
+            verticalAlignment = Legend.LegendVerticalAlignment.TOP
+            horizontalAlignment = Legend.LegendHorizontalAlignment.RIGHT
         }
 
         chart.notifyDataSetChanged()
@@ -339,5 +469,151 @@ class DetalhesPontoColeta : AppCompatActivity() {
             "Não foi possível identificar o ponto para remoção.",
             Toast.LENGTH_LONG
         ).show()
+    }
+
+    // ==================== Funcionalidades de Fotos ====================
+
+    private fun configurarFotos() {
+        fotoRepository = FotoLocalRepository(this)
+
+        fotoAdapter = FotoLocalAdapter(
+            onEditComment = { foto, newComment ->
+                lifecycleScope.launch {
+                    val result = fotoRepository.atualizarComentario(foto.id, newComment)
+                    if (result.isSuccess) {
+                        Toast.makeText(this@DetalhesPontoColeta, "Comentário atualizado", Toast.LENGTH_SHORT).show()
+                        pontoColetaAtual?.id?.let { carregarFotos(it) }
+                    } else {
+                        Toast.makeText(this@DetalhesPontoColeta, "Erro ao atualizar comentário", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onDelete = { foto ->
+                lifecycleScope.launch {
+                    val result = fotoRepository.deletarFoto(foto.id)
+                    if (result.isSuccess) {
+                        Toast.makeText(this@DetalhesPontoColeta, "Foto excluída", Toast.LENGTH_SHORT).show()
+                        pontoColetaAtual?.id?.let { carregarFotos(it) }
+                    } else {
+                        Toast.makeText(this@DetalhesPontoColeta, "Erro ao excluir foto", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            onClick = { foto ->
+                // Visualizar foto em tela cheia (opcional - implementação futura)
+                Toast.makeText(this, "Visualização de foto: ${foto.id}", Toast.LENGTH_SHORT).show()
+            }
+        )
+
+        binding.recyclerPhotos.adapter = fotoAdapter
+        binding.recyclerPhotos.isNestedScrollingEnabled = false
+
+        // Botão adicionar foto
+        binding.btnAddPhoto.setOnClickListener {
+            checkCameraPermissionAndLaunch()
+        }
+    }
+
+    private fun carregarFotos(pontoColetaId: String) {
+        lifecycleScope.launch {
+            val fotos = fotoRepository.getFotosPorPonto(pontoColetaId)
+
+            if (fotos.isEmpty()) {
+                binding.tvEmptyPhotos.visibility = View.VISIBLE
+                binding.recyclerPhotos.visibility = View.GONE
+            } else {
+                binding.tvEmptyPhotos.visibility = View.GONE
+                binding.recyclerPhotos.visibility = View.VISIBLE
+                fotoAdapter.submitList(fotos)
+            }
+        }
+    }
+
+    private fun checkCameraPermissionAndLaunch() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.CAMERA
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                launchCamera()
+            }
+            else -> {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    private fun launchCamera() {
+        lifecycleScope.launch {
+            try {
+                val photoFile = fotoRepository.createPhotoFile()
+                val photoUri = fotoRepository.getUriForFile(photoFile)
+
+                currentPhotoFile = photoFile
+                currentPhotoUri = photoUri
+
+                cameraLauncher.launch(photoUri)
+            } catch (e: Exception) {
+                Toast.makeText(this@DetalhesPontoColeta, "Erro ao iniciar câmera: ${e.message}", Toast.LENGTH_SHORT).show()
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun showCommentDialog() {
+        val dialogBinding = DialogFotoComentarioBinding.inflate(LayoutInflater.from(this))
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogBinding.root)
+            .create()
+
+        dialogBinding.btnCancel.setOnClickListener {
+            // Cancelar - deletar foto
+            currentPhotoFile?.delete()
+            currentPhotoFile = null
+            currentPhotoUri = null
+            dialog.dismiss()
+        }
+
+        dialogBinding.btnSave.setOnClickListener {
+            val comentario = dialogBinding.etComentario.text.toString().trim()
+            salvarFoto(comentario)
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    private fun salvarFoto(comentario: String) {
+        val pontoId = pontoColetaAtual?.id
+        val photoPath = currentPhotoFile?.absolutePath
+
+        if (pontoId == null || photoPath == null) {
+            Toast.makeText(this, "Erro: dados inválidos", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            val result = fotoRepository.salvarFoto(
+                pontoColetaId = pontoId,
+                caminhoArquivo = photoPath,
+                comentario = comentario
+            )
+
+            if (result.isSuccess) {
+                Toast.makeText(this@DetalhesPontoColeta, "Foto salva com sucesso!", Toast.LENGTH_SHORT).show()
+                carregarFotos(pontoId)
+            } else {
+                Toast.makeText(
+                    this@DetalhesPontoColeta,
+                    "Erro ao salvar foto: ${result.exceptionOrNull()?.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            // Limpar referências
+            currentPhotoFile = null
+            currentPhotoUri = null
+        }
     }
 }

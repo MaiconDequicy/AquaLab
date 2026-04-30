@@ -88,6 +88,10 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
     private fun addMarkersToMap(pontos: List<PontoColeta>) {
         gMap?.clear()
 
+        if (pontos.isEmpty()) return
+
+        val boundsBuilder = LatLngBounds.Builder()
+
         pontos.forEach { ponto ->
             val position = LatLng(ponto.latitude, ponto.longitude)
 
@@ -105,6 +109,29 @@ class Mapa : Fragment(), OnMapReadyCallback, GoogleMap.InfoWindowAdapter {
                     .position(position)
                     .icon(BitmapDescriptorFactory.defaultMarker(cor))
             )?.tag = ponto
+
+            // Adicionar posição ao bounds para cálculo automático
+            boundsBuilder.include(position)
+        }
+
+        // Calcular centróide e ajustar zoom para mostrar todos os pontos
+        try {
+            val bounds = boundsBuilder.build()
+
+            // Se houver apenas um ponto, fazer zoom para ele
+            if (pontos.size == 1) {
+                val position = LatLng(pontos[0].latitude, pontos[0].longitude)
+                gMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(position, 15f))
+            } else {
+                // Para múltiplos pontos, ajustar câmera para mostrar todos
+                // Padding de 150 pixels nas bordas
+                val padding = 150
+                gMap?.animateCamera(CameraUpdateFactory.newLatLngBounds(bounds, padding))
+            }
+        } catch (e: Exception) {
+            // Fallback para posição padrão se houver erro
+            val defaultPosition = LatLng(-3.1190275, -60.0217314) // Manaus
+            gMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultPosition, 10f))
         }
     }
 
