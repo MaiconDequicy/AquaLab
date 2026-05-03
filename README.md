@@ -118,6 +118,16 @@ O aplicativo utiliza Room para armazenar dados localmente, permitindo:
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Autor 
 
 **Maicon Costa**
+
+## 📄 Licença
+
+Este projeto é protegido por direitos autorais.
+
+O código-fonte, documentação e materiais associados não podem ser copiados,
+modificados, redistribuídos ou utilizados para fins comerciais ou acadêmicos
+sem autorização prévia do autor.
+
+© 2026 Maicon Costa. Todos os direitos reservados.
